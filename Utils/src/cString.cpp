@@ -386,7 +386,7 @@ BasicStringStream<T>::BasicStringStream(const BasicString<T>& str) : std::basic_
 {
 }
 
-namespace Utils
+namespace Clipped
 {
     // Please compile template class for the following types:
     template class BasicString<char>;

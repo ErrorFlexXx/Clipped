@@ -135,7 +135,7 @@ BasicPath<T>& BasicPath<T>::operator+(const BasicString<T>& rhs)
 }
 
 // Please compile template class for the following types:
-namespace Utils
+namespace Clipped
 {
     template class BasicPath<char>;
 #ifdef CLIPPED_BUILD_WIDE
