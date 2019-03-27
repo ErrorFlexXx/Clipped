@@ -29,6 +29,12 @@ namespace Clipped
         bool config();
 
         /**
+         * @brief availableBytes returns the amount of current bytes that can be read.
+         * @return available byte amount.
+         */
+        int availableBytes() const;
+
+        /**
          * @brief writeLine writes a line over the serial interface.
          * @param data the data to be sent.
          * @param lineEnd to use.

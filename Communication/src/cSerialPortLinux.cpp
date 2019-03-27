@@ -1,7 +1,9 @@
 #include "cSerialPortLinux.h"
 #include <ClippedUtils/cLogger.h>
 #include <ClippedUtils/cTime.h>
+
 #include <string.h> //strerror
+#include <sys/ioctl.h>
 
 #ifdef LINUX
 
@@ -126,6 +128,19 @@ bool SerialPort::config()
     tcflush(handle, TCIOFLUSH);
     LogDebug() << "Configuring serial port done!";
     return true;
+}
+
+int SerialPort::availableBytes() const
+{
+    int nread;
+
+    if(-1 == ::ioctl(handle, TIOCINQ, &nread))
+    {
+        LogError() << interface << " Error: " << errno << ": " << strerror(errno);
+        return -1;
+    }
+
+    return nread;
 }
 
 int SerialPort::writeLine(const String& data, const String& lineEnd)
