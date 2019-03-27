@@ -248,13 +248,13 @@ namespace Clipped
          * @brief millis returns the counted time in milliseconds.
          * @return counted time in milliseconds.
          */
-        unsigned long long millis() { return microCounter / 1000ULL; }
+        unsigned long long millis() { if(isRunning()) { stop(); start(); } return microCounter / 1000ULL; }
 
         /**
          * @brief micros returns the counted time in microseconds.
          * @return counted time in microseconds.
          */
-        unsigned long long micros() { return microCounter; }
+        unsigned long long micros() { if(isRunning()) { stop(); start(); } return microCounter; }
 
         /**
          * @brief toString creates a string representing the result of the current microCounter.
@@ -269,6 +269,11 @@ namespace Clipped
             }
             return String(microCounter) + " us";
         }
+
+        /**
+         * @brief isRunning returns true if the stopwatch is currently running.
+         */
+        bool isRunning() const { return before != 0ULL; }
 
     private:
         unsigned long long microCounter;  //!< Counter of elapsed microseconds.

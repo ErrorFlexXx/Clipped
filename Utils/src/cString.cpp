@@ -278,6 +278,21 @@ bool BasicString<T>::contains(const BasicString<T>& search, bool ignoreCase) con
 }
 
 template <class T>
+bool BasicString<T>::endsWith(const BasicString<T>& value, bool ignoreCase) const
+{
+    if(this->length() >= value.length())
+    {
+        BasicString<T> check = this->substr(this->length() - value.length());
+
+        if(ignoreCase)
+            return check.toUpper() == value.toUpper();
+        else
+            return check == value;
+    }
+    return false;
+}
+
+template <class T>
 BasicString<T>& BasicString<T>::replace(const BasicString<T>& search, const BasicString<T>& replace)
 {
     size_t pos = 0;

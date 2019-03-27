@@ -152,6 +152,14 @@ namespace Clipped
         bool contains(const BasicString<T>& search, bool ignoreCase = true) const;
 
         /**
+         * @brief endsWith checks if the string ends with given text.
+         * @param value to be checked.
+         * @param ignoreCase true if the case should be ignored.
+         * @return true if the string ends with the given value.
+         */
+        bool endsWith(const BasicString<T>& value, bool ignoreCase = false) const;
+
+        /**
          * @brief replace replace all occurences of search with replace.
          * @param search to replace
          * @param replace to replace with
