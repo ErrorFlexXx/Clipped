@@ -74,7 +74,7 @@ namespace Clipped
         } DispText;
     }
 
-    class Multimeter
+    class MultimeterHP34401A
     {
     public:
         /**
@@ -82,9 +82,9 @@ namespace Clipped
          * @param serialInterface serial interface path (e.g. COM0 or /dev/ttyUSB0)
          * @param settings Serial port interface settings.
          */
-        Multimeter(const String& serialInterface, const ISerialPort::Settings& settings);
+        MultimeterHP34401A(const String& serialInterface, const ISerialPort::Settings& settings);
 
-        ~Multimeter();
+        ~MultimeterHP34401A();
 
         bool connect();
         bool sendSCPICommand(SCPI::Command* command);

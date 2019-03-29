@@ -4,13 +4,13 @@
 
 using namespace Clipped;
 
-Multimeter::Multimeter(const String& serialInterface, const ISerialPort::Settings& settings)
+MultimeterHP34401A::MultimeterHP34401A(const String& serialInterface, const ISerialPort::Settings& settings)
     : device(new SerialPort(serialInterface, settings))
     , pendingCommand(nullptr)
     , comWorkerRunning(false)
 {}
 
-Multimeter::~Multimeter()
+MultimeterHP34401A::~MultimeterHP34401A()
 {
     if(device)
     {
@@ -20,7 +20,7 @@ Multimeter::~Multimeter()
     }
 }
 
-void Multimeter::comWorkerRoutine()
+void MultimeterHP34401A::comWorkerRoutine()
 {
     comWorkerRunning = true;
     while(device->getIsOpen())
@@ -37,41 +37,41 @@ void Multimeter::comWorkerRoutine()
     comWorkerRunning = false;
 }
 
-bool Multimeter::connect()
+bool MultimeterHP34401A::connect()
 {
     if(device->open(IODevice::ReadWrite))
     {
-        comWorker = std::thread(&Multimeter::comWorkerRoutine, this);
+        comWorker = std::thread(&MultimeterHP34401A::comWorkerRoutine, this);
         comWorker.detach();
         return true;
     }
     return false;
 }
 
-bool Multimeter::close()
+bool MultimeterHP34401A::close()
 {
     return device->close();
 }
 
-bool Multimeter::sendSCPICommand(SCPI::Command* command)
+bool MultimeterHP34401A::sendSCPICommand(SCPI::Command* command)
 {
     pendingCommand = command;
     return device->write(command->command);
 }
 
-bool Multimeter::sendSCPICommand(SCPI::Command* command, const String& args)
+bool MultimeterHP34401A::sendSCPICommand(SCPI::Command* command, const String& args)
 {
     pendingCommand = command;
     String assembledCommand = command->command + args + "\n";
     return device->write(assembledCommand);
 }
 
-bool Multimeter::readSCPIResponse(SCPI::Response& response)
+bool MultimeterHP34401A::readSCPIResponse(SCPI::Response& response)
 {
     return queue.try_dequeue(response);
 }
 
-void Multimeter::processResponse()
+void MultimeterHP34401A::processResponse()
 {
     auto it = buffer.find_first_of(String("\n"), 0);
     while(it != String::npos) //Process all responses.
