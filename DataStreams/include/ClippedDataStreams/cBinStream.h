@@ -21,7 +21,7 @@
 #include <ClippedUtils/cLogger.h>
 #include <ClippedUtils/cString.h>
 
-const Utils::String UNEXPECTED_END_TEXT = "Unexpected end of data!";
+const Clipped::String UNEXPECTED_END_TEXT = "Unexpected end of data!";
 #define UNEXPECTED_END() LogWarn() << UNEXPECTED_END_TEXT, false;
 
 namespace Clipped

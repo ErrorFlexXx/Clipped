@@ -49,6 +49,12 @@ namespace Clipped
         BasicString(const T* s, size_t n);
 
         /**
+         * @brief BasicString constructs a BasicString object from an vector.
+         * @param s vector to initialize with.
+         */
+        BasicString(const std::vector<T>& s);
+
+        /**
          * @brief BasicString Copy constructor.
          * @param s to copy.
          */
@@ -103,6 +109,12 @@ namespace Clipped
         BasicString<wchar_t> toWString() const;
 
         /**
+         * @brief toVector converts this string to an char vector.
+         * @return a vector containing chars.
+         */
+        std::vector<char> toVector() const;
+
+        /**
          * @brief fromAsci sets this string from an ascii input.
          * @return a reference of this string.
          */
@@ -115,6 +127,12 @@ namespace Clipped
          * @return the resulting integer.
          */
         int toInt(size_t* pos = nullptr, int base = 10) const;
+
+        /**
+         * @brief toDouble casts this string to a double value.
+         * @return a double.
+         */
+        double toDouble() const;
 
         /**
          * @brief toLong casts this string to a long.

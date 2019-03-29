@@ -92,7 +92,6 @@ namespace Clipped
          * @brief SetCallbackFunction installs a callback func. that gets called
          *   every time a log message is ready.
          */
-        template <typename T>
         void SetCallbackFunction(std::function<void(MessageType, const String&)> callback)
         {
             Flush(MessageType::MessageTypeCount, nullptr, &callback);

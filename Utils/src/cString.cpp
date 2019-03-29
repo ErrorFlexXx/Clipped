@@ -41,6 +41,11 @@ BasicString<T>::BasicString(const T* s, size_t n) : basic_string<T>(s, n)
 }
 
 template <class T>
+BasicString<T>::BasicString(const std::vector<T>& s) : basic_string<T>(s.data(), s.size())
+{
+}
+
+template <class T>
 BasicString<T>::BasicString(const BasicString<T>& s) : basic_string<T>(s)
 {
 }
@@ -155,6 +160,20 @@ BasicString<wchar_t> BasicString<char32_t>::toWString() const
     return this->toString().toWString();  // FIXME: Find a direct way of converting this.
 }
 
+template <class T>
+std::vector<char> BasicString<T>::toVector() const
+{
+    std::vector<char> out;
+    for(const auto& character : *this)
+    {
+        for(size_t i = sizeof(T); i > 0; i--)
+        {
+            out.push_back(static_cast<char>((character >> (i - 1))));
+        }
+    }
+    return out;
+}
+
 template <>
 BasicString<char> BasicString<char>::fromAsci(const char* str)
 {
@@ -226,6 +245,16 @@ template <class T>
 int BasicString<T>::toInt(size_t* pos, int base) const
 {
     return std::stoi(*this, pos, base);
+}
+
+template <class T>
+double BasicString<T>::toDouble() const
+{
+    double casted;
+    BasicStringStream<T> stream;
+    stream << *this;
+    stream >> casted;
+    return casted;
 }
 
 template <class T>
