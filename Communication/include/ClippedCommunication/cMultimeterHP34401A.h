@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cSerialPort.h"
+#include <ClippedUtils/cString.h>
 #include <readerwriterqueue/readerwriterqueue.h>
 #include <thread>
 #include <functional>

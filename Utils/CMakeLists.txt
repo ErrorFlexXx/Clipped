@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.9)
 
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON) # Export symbols on windows
+
 project(ClippedUtils VERSION 0.0.1 DESCRIPTION "Clipped Utility library.")
 
 # Public Header of this library (later copied to e.g. /usr/local/include/ClippedUtils/):
