@@ -58,9 +58,7 @@ bool SerialPort::open(const IODevice::OpenMode& mode)
         return false;
     }
     isOpen = true;
-    config();
-    //LogDebug() << "Serial port: " << interface.c_str() << " opened!";
-    return true;
+    return config();
 }
 
 bool SerialPort::config()
