@@ -70,7 +70,13 @@ namespace Clipped
          * @brief getTotalCpus returns the number of installed cpu cores in this system.
          * @return number of cpu cores.
          */
-        static int getTotalCpus();
+        static size_t getTotalCpus();
+
+        /**
+         * @brief msleep let's the current thread sleep for some time.
+         * @param milliseconds to sleep.
+         */
+        static void mSleep(size_t milliseconds);
     };
 
 }  // namespace Utils

@@ -1,12 +1,3 @@
-#pragma once
-
-#include <ClippedUtils/cString.h>
-#include <ClippedUtils/cOsDetect.h>
-#include "cSerialPortInterface.h"
-
-#include <termios.h>
-#include <unistd.h>
-#include <fcntl.h>
 /* Copyright 2019 Christian Löpke
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,6 +14,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
+#include <ClippedUtils/cString.h>
+#include <ClippedUtils/cOsDetect.h>
+#include "cSerialPortInterface.h"
+
+#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <errno.h>
 
 namespace Clipped
@@ -33,7 +33,7 @@ namespace Clipped
     class SerialPort : public ISerialPort
     {
     public:
-        SerialPort(const String& interface, const Settings& settings);
+        SerialPort(const String& interfaceName, const Settings& settings);
 
         virtual ~SerialPort();
 

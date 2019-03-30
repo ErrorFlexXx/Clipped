@@ -28,8 +28,8 @@
 
 using namespace Clipped;
 
-SerialPort::SerialPort(const String& interface, const Settings& settings)
-    : ISerialPort(interface, settings)
+SerialPort::SerialPort(const String& interfaceName, const Settings& settings)
+    : ISerialPort(interfaceName, settings)
 {
     isOpen = false;
 }

@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #elif defined(WINDOWS)
-#include <windows.h>
+#include <Windows.h>
 #endif
 
 using namespace Clipped;
@@ -102,7 +102,7 @@ MemorySize System::getTotalSystemMemory()
     return pages * page_size;
 }
 #elif defined(WINDOWS)
-MemorySize Environment::getTotalSystemMemory()
+MemorySize System::getTotalSystemMemory()
 {
     MEMORYSTATUSEX status;
     status.dwLength = sizeof(status);
@@ -111,4 +111,13 @@ MemorySize Environment::getTotalSystemMemory()
 }
 #endif
 
-int System::getTotalCpus() { return std::thread::hardware_concurrency(); }
+size_t System::getTotalCpus() { return std::thread::hardware_concurrency(); }
+
+void System::mSleep(size_t milliseconds)
+{
+#ifdef LINUX
+    usleep(milliseconds * 1000);
+#elif defined(WINDOWS)
+    Sleep(static_cast<DWORD>(milliseconds));
+#endif
+}

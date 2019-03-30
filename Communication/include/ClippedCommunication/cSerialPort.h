@@ -20,4 +20,6 @@
 
 #ifdef LINUX
 #include "cSerialPortLinux.h"
+#elif defined(WINDOWS)
+#include "cSerialPortWindows.h"
 #endif

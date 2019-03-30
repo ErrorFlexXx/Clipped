@@ -128,15 +128,15 @@ namespace Clipped
             FlowControl flowControl;//!< Setupped flow control.
         };
 
-        ISerialPort(const String& interface, const Settings& settings)
-            : interface(interface)
+        ISerialPort(const String& interfaceName, const Settings& settings)
+            : interfaceName(interfaceName)
             , settings(settings)
         {}
 
         virtual ~ISerialPort() {}
 
     protected:
-        String interface; //!< Name of the serial interface (e.g. /dev/ttyUSB0 on linux or COM0 on windows)
+        String interfaceName; //!< Name of the serial interface (e.g. /dev/ttyUSB0 on linux or COM0 on windows)
         Settings settings;//!< The serial port settings (baudrate, databits, parity, etc.)
     };
 
