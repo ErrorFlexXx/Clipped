@@ -28,6 +28,7 @@ using namespace Clipped;
 SerialPort::SerialPort(const String& interfaceName, const Settings& settings)
     : ISerialPort(interfaceName, settings)
 {
+    Logger() << Logger::MessageType::Debug;
     isOpen = false;
 }
 
@@ -66,11 +67,12 @@ bool SerialPort::open(const IODevice::OpenMode& mode)
            FILE_FLAG_OVERLAPPED,
            nullptr
            );
-    isOpen = true;
     if(handle == INVALID_HANDLE_VALUE)
     {
         LogError() << "Can't open port: " << interfaceName << " because: " << System::getSystemErrorText();
+        return false;
     }
+    isOpen = true;
     return config();
 }
 
@@ -139,7 +141,6 @@ bool SerialPort::config()
         LogError() << "Serial port setup failed!";
         return false;
     }
-    LogDebug() << "Configuring serial port done!";
     return true;
 }
 
@@ -219,6 +220,7 @@ bool SerialPort::close()
             return false;
         }
     isOpen = false;
+    handle = INVALID_HANDLE_VALUE;
     return true;
 }
 

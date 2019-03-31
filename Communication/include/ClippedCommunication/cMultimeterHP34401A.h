@@ -95,10 +95,10 @@ namespace Clipped
 
     private:
         moodycamel::ReaderWriterQueue<SCPI::Response> queue;
+        IODevice* device;
         SCPI::Command* pendingCommand;
         std::atomic<bool> comWorkerRunning;
         std::thread comWorker;
-        IODevice* device;
         String buffer;
 
         void comWorkerRoutine();
