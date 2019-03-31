@@ -266,7 +266,6 @@ namespace Clipped
     using U32StringStream = BasicStringStream<char32_t>;
 
     //Tell the compiler what template instanciations are compiled (fixes -Wundefined-func-template)
-    // Please compile template class for the following types:
     extern template class BasicString<char>;
     extern template class BasicStringStream<char>;
 #ifdef CLIPPED_BUILD_WIDE
