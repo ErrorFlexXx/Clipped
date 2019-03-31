@@ -95,7 +95,8 @@ namespace Clipped
          */
         enum FlowControl
         {
-            FlowControlNone
+            FlowControlNone,
+            FlowControlHardwareHandshake
         };
 
         /**

@@ -141,6 +141,12 @@ bool SerialPort::config()
         serialParams.fInX = 0;
         serialParams.fOutX = 0;
         break;
+    case FlowControlHardwareHandshake:
+        serialParams.fDtrControl = DTR_CONTROL_ENABLE;
+        serialParams.fRtsControl = RTS_CONTROL_ENABLE;
+        serialParams.fInX = 0;
+        serialParams.fOutX = 0;
+        break;
     }
 
     if (!::SetCommMask(handle, EV_RXCHAR))
