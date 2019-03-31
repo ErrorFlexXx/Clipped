@@ -31,13 +31,13 @@ namespace Clipped
          * @brief executableFilePath returns the full path to the executable file.
          * @return full path to the executable including the executable file.
          */
-        static Path executableFilePath();
+        static Path getExecutableFilePath();
 
         /**
          * @brief executablePath returns the full path to the executable file.
          * @return full path to the executable excluding the executable file.
          */
-        static Path executablePath();
+        static Path getExecutablePath();
 
         /**
          * @brief getEnvVar reads an environment variable.

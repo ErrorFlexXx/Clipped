@@ -30,7 +30,7 @@
 using namespace Clipped;
 
 #ifdef LINUX
-Path System::executableFilePath()
+Path System::getExecutableFilePath()
 {
     std::vector<char> buff;
     ssize_t result;
@@ -42,7 +42,7 @@ Path System::executableFilePath()
     return buff.data();
 }
 #elif defined(WINDOWS)
-Path System::executableFilePath()
+Path System::getExecutableFilePath()
 {
     std::vector<char> buff;
     DWORD result;
@@ -55,9 +55,9 @@ Path System::executableFilePath()
 }
 #endif
 
-Path System::executablePath()
+Path System::getExecutablePath()
 {
-    Path filepath = executableFilePath();
+    Path filepath = getExecutableFilePath();
     return Path(filepath.getDirectory());
 }
 
