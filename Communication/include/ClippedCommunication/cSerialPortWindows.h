@@ -112,5 +112,6 @@ namespace Clipped
 
     private:
         HANDLE handle;
+        OVERLAPPED overlappedRead, overlappedWrite;
     };
 } //namespace Clipped

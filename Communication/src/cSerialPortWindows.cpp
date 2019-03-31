@@ -64,9 +64,9 @@ bool SerialPort::open(const IODevice::OpenMode& mode)
            0,
            nullptr,
            OPEN_EXISTING,
-           FILE_FLAG_OVERLAPPED,
-           nullptr
-           );
+           FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
+           nullptr);
+
     if(handle == INVALID_HANDLE_VALUE)
     {
         LogError() << "Can't open port: " << interfaceName << " because: " << System::getSystemErrorText();
@@ -81,6 +81,12 @@ bool SerialPort::config()
     // Do some basic settings
     DCB serialParams = {};
     serialParams.DCBlength = sizeof(serialParams);
+
+    memset( &overlappedRead, 0, sizeof( OVERLAPPED ) );
+    memset( &overlappedWrite, 0, sizeof( OVERLAPPED ) );
+
+    overlappedRead.hEvent = CreateEvent( nullptr, TRUE, FALSE, nullptr);
+    overlappedWrite.hEvent = CreateEvent( nullptr, TRUE, FALSE, nullptr );
 
     GetCommState(handle, &serialParams);
 
@@ -132,13 +138,39 @@ bool SerialPort::config()
     case FlowControlNone:
         serialParams.fDtrControl = DTR_CONTROL_DISABLE;
         serialParams.fRtsControl = RTS_CONTROL_DISABLE;
+        serialParams.fInX = 0;
+        serialParams.fOutX = 0;
         break;
     }
 
+    if (!::SetCommMask(handle, EV_RXCHAR))
+    {
+        LogError() << "Faild enable read: " << System::getSystemErrorText();
+        return false;
+    }
+
+    COMMTIMEOUTS timeouts;
+    timeouts.ReadIntervalTimeout            = MAXDWORD;
+    timeouts.ReadTotalTimeoutMultiplier		= 0;
+    timeouts.ReadTotalTimeoutConstant       = 0;
+    timeouts.WriteTotalTimeoutMultiplier    = 0;
+    timeouts.WriteTotalTimeoutConstant      = 0;
+
+    if (!::SetCommTimeouts(handle, &timeouts))
+    {
+        LogError() << "Faild config timeouts: " << System::getSystemErrorText();
+        return false;
+    }
 
     if(!SetCommState(handle, &serialParams))
     {
-        LogError() << "Serial port setup failed!";
+        LogError() << "Problem: " << System::getSystemErrorText();
+        return false;
+    }
+
+    if(!SetupComm(handle, 10000, 10000))
+    {
+        LogError() << "Problem: " << System::getSystemErrorText();
         return false;
     }
     return true;
@@ -160,6 +192,7 @@ bool SerialPort::availableBytes(size_t& availableBytes) const
         return false;
     }
     availableBytes = static_cast<size_t>(stat.cbInQue);
+    if(availableBytes > 0) LogDebug() << "Some data available on port!";
     return true;
 }
 
@@ -172,8 +205,13 @@ bool SerialPort::write(const std::vector<char>& data)
 {
     DWORD bytesWritten;
     LogDebug() << "Serial write: " << String(data).replace("\n", "");
-    if(!WriteFile(handle, data.data(), static_cast<DWORD>(data.size()), &bytesWritten, nullptr))
+    BOOL status;
+    if((status = !WriteFile(handle, data.data(), static_cast<DWORD>(data.size()), &bytesWritten, &overlappedWrite)))
+    {
+        if(status == ERROR_IO_PENDING)
+            WaitForSingleObject(overlappedWrite.hEvent, 100);
         return false;
+    }
     return bytesWritten == data.size();
 }
 
@@ -195,8 +233,15 @@ bool SerialPort::read(std::vector<char>& data, size_t count)
     DWORD bytesRead;
     for(size_t i = 0; i < count; i++)
     {
-        if(!ReadFile(handle, &buffer, 1, &bytesRead, nullptr))
-            return false;
+        BOOL status;
+        if(!(status = ReadFile(handle, &buffer, 1, &bytesRead, &overlappedRead)))
+        {
+            if(status == ERROR_IO_PENDING)
+            {
+                WaitForSingleObject(overlappedRead.hEvent, 100);
+                return false;
+            }
+        }
         data.push_back(buffer);
     }
     return true;
@@ -219,6 +264,8 @@ bool SerialPort::close()
             LogDebug() << "Serial port close error: " << GetLastError << ": " << System::getSystemErrorText();
             return false;
         }
+    if(overlappedRead.hEvent != nullptr) CloseHandle(overlappedRead.hEvent);
+    if(overlappedWrite.hEvent != nullptr) CloseHandle(overlappedWrite.hEvent);
     isOpen = false;
     handle = INVALID_HANDLE_VALUE;
     return true;
