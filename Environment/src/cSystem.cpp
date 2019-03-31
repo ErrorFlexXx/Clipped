@@ -121,3 +121,20 @@ void System::mSleep(size_t milliseconds)
     Sleep(static_cast<DWORD>(milliseconds));
 #endif
 }
+
+String System::getSystemErrorText()
+{
+#ifdef LINUX
+    return strerror(errno);
+#elif defined(WINDOWS)
+        DWORD errorMessageID = ::GetLastError();
+        if(errorMessageID == 0)
+            return ""; //No error
+        LPSTR messageBuffer = nullptr; //Let Format message allocate memory.
+        size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                                     nullptr, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPSTR>(&messageBuffer), 0, nullptr);
+        String message(messageBuffer, size);
+        LocalFree(messageBuffer); //Free the buffer.
+        return message;
+#endif
+}

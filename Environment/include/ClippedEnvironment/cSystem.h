@@ -77,6 +77,12 @@ namespace Clipped
          * @param milliseconds to sleep.
          */
         static void mSleep(size_t milliseconds);
+
+        /**
+         * @brief GetSystemErrorText returns the current error text of the os api.
+         * @return an error string.
+         */
+        static String getSystemErrorText();
     };
 
-}  // namespace Utils
+}  // namespace Clipped

@@ -38,41 +38,41 @@ namespace Clipped
             String response; //!< Response text
         };
 
-        struct Remote : public Command
+         struct Remote : public Command
         {
         public:
             Remote() { id = RemoteId; command = "SYST:REM\n"; }
-        } Remote;
+        } static Remote;
 
         struct Local : public Command
         {
         public:
             Local() { id = LocalId; command = "SYST:LOC\n"; }
-        } Local;
+        } static Local;
 
         struct Error : public Command
         {
         public:
             Error() { id = ErrorId; command = "SYST:ERR?\n"; }
-        } Error;
+        } static Error;
 
         struct MeasVoltDC : public Command
         {
         public:
             MeasVoltDC() { id = MeasVoltDCId; command = "MEAS:VOLT:DC?\n"; }
-        } MeasVoltDC;
+        } static MeasVoltDC;
 
         struct Ident : public Command
         {
         public:
             Ident() { id = IdentId; command = "*IDN?\n"; }
-        } Ident;
+        } static Ident;
 
         struct DispText : public Command
         {
         public:
             DispText() { id = DispTextId; command = "DISP:TEXT "; }
-        } DispText;
+        } static DispText;
     }
 
     class MultimeterHP34401A

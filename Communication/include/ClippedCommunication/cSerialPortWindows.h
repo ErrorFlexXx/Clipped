@@ -19,11 +19,7 @@
 #include <ClippedUtils/cString.h>
 #include <ClippedUtils/cOsDetect.h>
 #include "cSerialPortInterface.h"
-
-#include <termios.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
+#include <Windows.h>
 
 namespace Clipped
 {
@@ -115,6 +111,6 @@ namespace Clipped
         virtual bool close() override;
 
     private:
-        int handle; //!< Unix file handle to serial port.
+        HANDLE handle;
     };
 } //namespace Clipped
