@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.9)
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON) # Export symbols on windows
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}) # Copy libs to exe path
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 project(ClippedCommunication VERSION 0.0.1 DESCRIPTION "Clipped Communication library.")
 
@@ -9,7 +11,7 @@ set(${PROJECT_NAME}_PUBLIC_HEADER
     include/${PROJECT_NAME}/cIODevice.h
     include/${PROJECT_NAME}/cSerialPort.h
     include/${PROJECT_NAME}/cSerialPortLinux.h
-    #include/${PROJECT_NAME}/cSerialPortWindows.h
+    include/${PROJECT_NAME}/cSerialPortWindows.h
     include/${PROJECT_NAME}/cSerialPortInterface.h
     include/${PROJECT_NAME}/cMultimeterHP34401A.h
     lib/readerwriterqueue/readerwriterqueue.h
@@ -17,7 +19,7 @@ set(${PROJECT_NAME}_PUBLIC_HEADER
 
 set(${PROJECT_NAME}_SOURCES
     src/cSerialPortLinux.cpp
-    #src/cSerialPortWindows.cpp
+    src/cSerialPortWindows.cpp
     src/cMultimeterHP34401A.cpp
 )
 
