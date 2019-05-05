@@ -25,6 +25,7 @@
 #include <unistd.h>
 #elif defined(WINDOWS)
 #include <windows.h>
+#include <psapi.h>
 #endif
 
 using namespace Clipped;
