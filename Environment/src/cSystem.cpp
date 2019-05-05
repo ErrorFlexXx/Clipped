@@ -102,12 +102,36 @@ MemorySize System::getTotalSystemMemory()
     return pages * page_size;
 }
 #elif defined(WINDOWS)
-MemorySize Environment::getTotalSystemMemory()
+MemorySize System::getTotalSystemMemory()
 {
     MEMORYSTATUSEX status;
     status.dwLength = sizeof(status);
     GlobalMemoryStatusEx(&status);
     return status.ullTotalPhys;
+}
+#endif
+
+#ifdef LINUX
+MemorySize System::getCurrentProcessSystemMemory()
+{
+    long rss = 0L;
+    FILE* fp = NULL;
+    if ( (fp = fopen( "/proc/self/statm", "r" )) == NULL )
+        return (size_t)0L;      /* Can't open? */
+    if ( fscanf( fp, "%*s%ld", &rss ) != 1 )
+    {
+        fclose( fp );
+        return (size_t)0L;      /* Can't read? */
+    }
+    fclose( fp );
+    return (size_t)rss * (size_t)sysconf( _SC_PAGESIZE);
+}
+#elif defined(WINDOWS)
+MemorySize System::getCurrentProcessSystemMemory()
+{
+    PROCESS_MEMORY_COUNTERS info;
+    GetProcessMemoryInfo( GetCurrentProcess(), &info, sizeof(info) );
+    return (size_t)info.WorkingSetSize;
 }
 #endif
 

@@ -67,6 +67,12 @@ namespace Clipped
         static MemorySize getTotalSystemMemory();
 
         /**
+         * @brief getCurrentProcessSystemMemory returns the current reserved ram of this process.
+         * @return the current allocated process memory size.
+         */
+        static MemorySize getCurrentProcessSystemMemory();
+
+        /**
          * @brief getTotalCpus returns the number of installed cpu cores in this system.
          * @return number of cpu cores.
          */
