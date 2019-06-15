@@ -16,11 +16,9 @@
 
 #include "cMath.h"
 
-using namespace Clipped;
-
 // Please compile template class for the following types:
-template class Utils::Vector2<float>;
-template class Utils::Vector3<float>;
-template class Utils::Vector4<float>;
-template class Utils::Matrix4<float>;
-template class Utils::Quaternion<float>;
+template class Clipped::Vector2<float>;
+template class Clipped::Vector3<float>;
+template class Clipped::Vector4<float>;
+template class Clipped::Matrix4<float>;
+template class Clipped::Quaternion<float>;

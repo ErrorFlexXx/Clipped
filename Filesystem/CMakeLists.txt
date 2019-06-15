@@ -12,6 +12,7 @@ set(${PROJECT_NAME}_PUBLIC_HEADER
 )
 
 add_library(${PROJECT_NAME} SHARED
+    ${${PROJECT_NAME}_PUBLIC_HEADER}
     src/cFile.cpp
     src/cBinFile.cpp
     src/Archives/cVdfsFile.cpp
