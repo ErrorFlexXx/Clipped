@@ -906,4 +906,4 @@ namespace Clipped
 
     using Quat4f = Quaternion<float>;
 
-}  // namespace Utils
+}  // namespace Clipped

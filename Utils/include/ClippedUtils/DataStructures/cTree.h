@@ -138,4 +138,4 @@ namespace Clipped
         std::map<I, Tree<I, T>> childs;  //!< subtrees identified by key of type I.
         std::map<I, T> elements;         //!< Key, elements map.
     };
-}  // namespace Utils
+}  // namespace Clipped

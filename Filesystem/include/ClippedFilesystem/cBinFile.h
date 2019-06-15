@@ -127,4 +127,4 @@ namespace Clipped
          */
         bool WriteStringTerminated(const String& str);
     };
-}  // namespace Utils
+}  // namespace Clipped

@@ -79,4 +79,4 @@ namespace Clipped
         static int getTotalCpus();
     };
 
-}  // namespace Utils
+}  // namespace Clipped

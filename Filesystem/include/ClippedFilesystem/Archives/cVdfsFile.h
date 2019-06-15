@@ -195,4 +195,4 @@ namespace Clipped
                                            Tree<String, Entry>* searchIndex, bool recursive);
     };
 
-}  // namespace Utils
+}  // namespace Clipped

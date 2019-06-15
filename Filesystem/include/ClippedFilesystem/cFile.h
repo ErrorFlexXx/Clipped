@@ -129,4 +129,4 @@ namespace Clipped
         FileDataMode dataMode;      //!< Data mode for this file instance.
         std::fstream file;          //!< Actual filestream.
     };
-}  // namespace Utils
+}  // namespace Clipped
