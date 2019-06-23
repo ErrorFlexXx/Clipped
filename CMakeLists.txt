@@ -26,5 +26,9 @@ if(CLIPPED_BUILD_COMMUNICATION)
     add_subdirectory(Communication)
 endif()
 
+if(CLIPPED_BUILD_ECS)
+    add_subdirectory(ECS)
+endif()
+
 # Do not forget to target_link_libraries against ClippedUtils ClippedFilesystem ...
 # Use (e.g.) #include <ClippedUtils/cLogger.h> and work in namespace Clipped to use this library.
