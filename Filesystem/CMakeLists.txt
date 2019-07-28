@@ -8,6 +8,8 @@ project(ClippedFilesystem VERSION 0.0.1 DESCRIPTION "Clipped Filesystem library.
 set(${PROJECT_NAME}_PUBLIC_HEADER 
     include/${PROJECT_NAME}/cFile.h
     include/${PROJECT_NAME}/cBinFile.h
+    include/${PROJECT_NAME}/cTextFile.h
+    include/${PROJECT_NAME}/cConfigFile.h
     include/${PROJECT_NAME}/Archives/cVdfsFile.h
 )
 
@@ -15,6 +17,8 @@ add_library(${PROJECT_NAME} SHARED
     ${${PROJECT_NAME}_PUBLIC_HEADER}
     src/cFile.cpp
     src/cBinFile.cpp
+    src/cTextFile.cpp
+    src/cConfigFile.cpp
     src/Archives/cVdfsFile.cpp
 )
 
