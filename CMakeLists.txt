@@ -2,6 +2,15 @@ cmake_minimum_required(VERSION 3.9)
 
 project(Clipped)
 
+# Note: Build type static if only allowed for OSS projects!
+if(CLIPPED_BUILD_STATIC)
+    message("Clipped will be built for static lib usage.")
+    set(CLIPPED_BUILD_TYPE STATIC)
+else()
+    message("Clipped will be built for shared lib usage.")
+    set(CLIPPED_BUILD_TYPE SHARED)
+endif()
+
 # The following components of Clipped library are mandatory:
 add_subdirectory(Utils)
 
@@ -28,13 +37,6 @@ endif()
 
 if(CLIPPED_BUILD_ECS)
     add_subdirectory(ECS)
-endif()
-
-# Note: Build type static if only allowed for OSS projects!
-if(CLIPPED_BUILD_STATIC)
-    set(BUILD_TYPE STATIC)
-else()
-    set(BUILD_TYPE SHARED)
 endif()
 
 # Do not forget to target_link_libraries against ClippedUtils ClippedFilesystem ...

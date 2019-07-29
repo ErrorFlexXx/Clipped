@@ -18,6 +18,8 @@ set(${PROJECT_NAME}_PUBLIC_HEADER
     include/${PROJECT_NAME}/DataStructures/cTree.h
 )
 
+message("Build type ${CLIPPED_BUILD_TYPE}")
+
 add_library(${PROJECT_NAME} ${CLIPPED_BUILD_TYPE}
     src/cString.cpp
     src/cPath.cpp
@@ -43,6 +45,7 @@ include(GNUInstallDirs)
 
 install(TARGETS ${PROJECT_NAME}
     EXPORT ${PROJECT_NAME}Config
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/static
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}  # This is for Windows
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
