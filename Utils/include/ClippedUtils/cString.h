@@ -73,6 +73,20 @@ namespace Clipped
         BasicString(const float& value);
 
         /**
+         * @brief BasicString creates a string representing the float value with given precision.
+         * @param value the float to display.
+         * @param precision number of digits behind the comma.
+         */
+        BasicString(const float& value, int precision);
+
+        /**
+         * @brief BasicString creates a string representing the double value with given precision.
+         * @param value the double to display.
+         * @param precision number of digits behind the comma.
+         */
+        BasicString(const double& value, int precision);
+
+        /**
          * @brief BasicString creates a string representing the int value.
          * @param value number to initialize from.
          */

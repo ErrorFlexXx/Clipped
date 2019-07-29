@@ -62,6 +62,22 @@ BasicString<T>::BasicString(const float& value)
 }
 
 template <class T>
+BasicString<T>::BasicString(const float& value, int precision)
+{
+    BasicStringStream<T> stream;
+    stream << std::fixed << std::setprecision(precision) << value;
+    *this = fromAsci(stream.str().c_str());
+}
+
+template <class T>
+BasicString<T>::BasicString(const double& value, int precision)
+{
+    BasicStringStream<T> stream;
+    stream << std::fixed << std::setprecision(precision) << value;
+    *this = fromAsci(stream.str().c_str());
+}
+
+template <class T>
 BasicString<T>::BasicString(const int& value)
 {
     *this = fromAsci(to_string(value).c_str());

@@ -41,7 +41,7 @@ namespace Clipped
          *   Sizes are being casted for better human readability: Bytes, kB, MB, GB, TB.
          * @return a String.
          */
-        String toString() const
+        String toString(const size_t precision = 2) const
         {
             using namespace std;
 
@@ -49,19 +49,19 @@ namespace Clipped
 
             if (bytes > TERA)
             {
-                return String(static_cast<float>(bytes) / TERA) + String(" TB");
+                return String(static_cast<float>(bytes) / TERA, precision) + String(" TB");
             }
             else if (bytes > GIGA)
             {
-                return String(static_cast<float>(bytes) / GIGA) + String(" GB");
+                return String(static_cast<float>(bytes) / GIGA, precision) + String(" GB");
             }
             else if (bytes > MEGA)
             {
-                return String(static_cast<float>(bytes) / MEGA) + String(" MB");
+                return String(static_cast<float>(bytes) / MEGA, precision) + String(" MB");
             }
             else if (bytes > KILO)
             {
-                return String(static_cast<float>(bytes) / KILO) + String(" kB");
+                return String(static_cast<float>(bytes) / KILO, precision) + String(" kB");
             }
             else
             {
