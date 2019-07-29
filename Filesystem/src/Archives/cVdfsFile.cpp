@@ -106,7 +106,7 @@ VDFSFile::Entry VDFSFile::getEntry(const Path& vdfsPath, bool& found)
     found = false;
     auto* searchIndex = &index;
 
-    for (String stage : dir.split(Path::DELIM))
+    for (String stage : dir.split(Path("/")))
     {
         if (searchIndex->subtreeExist(stage))
             searchIndex = &searchIndex->getSubtree(stage);
@@ -140,7 +140,7 @@ std::vector<VDFSFile::Entry> VDFSFile::getEntries(const Path& extension, const P
 
     auto* searchIndex = &index;
 
-    for (String stage : dir.split(Path::DELIM))
+    for (String stage : dir.split(Path("/")))
     {
         if (searchIndex->subtreeExist(stage))
             searchIndex = &searchIndex->getSubtree(stage);

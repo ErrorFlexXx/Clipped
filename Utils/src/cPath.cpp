@@ -21,19 +21,11 @@
 using namespace std;
 using namespace Clipped;
 
-#define PATH_CURRENT_DIR FILE_EXT_DELIM
-
-template <class T>
-const BasicString<T> BasicPath<T>::DELIM = BasicString<T>::fromAsci("/");
-
-template <class T>
-const BasicString<T> BasicPath<T>::WIN_DELIM = BasicString<T>::fromAsci("\\");
-
-template <class T>
-const BasicString<T> BasicPath<T>::PATH_UP = BasicString<T>::fromAsci("..");
-
-template <class T>
-const BasicString<T> BasicPath<T>::FILE_EXT_DELIM = BasicString<T>::fromAsci(".");
+#define DELIM               BasicPath<T>::fromAsci("/")
+#define WIN_DELIM           BasicPath<T>::fromAsci("\\")
+#define PATH_UP             BasicPath<T>::fromAsci("..")
+#define PATH_CURRENT_DIR    BasicPath<T>::fromAsci(".")
+#define FILE_EXT_DELIM      BasicPath<T>::fromAsci(".")
 
 template <class T>
 BasicPath<T>::BasicPath() : BasicString<T>()

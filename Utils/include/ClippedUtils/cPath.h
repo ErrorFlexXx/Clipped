@@ -104,10 +104,6 @@ namespace Clipped
          */
         BasicPath<T>& operator+(const BasicString<T>& rhs);
 
-        static const BasicString<T> DELIM;           //!< Path delimitor
-        static const BasicString<T> WIN_DELIM;       //!< Path delimitor on windows.
-        static const BasicString<T> PATH_UP;         //!< Path UP
-        static const BasicString<T> FILE_EXT_DELIM;  //!< Delimiter of the file extension
     };                                               // class BasicPath
 
     // extern template class BasicPath<char>;
