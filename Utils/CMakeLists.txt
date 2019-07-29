@@ -18,8 +18,6 @@ set(${PROJECT_NAME}_PUBLIC_HEADER
     include/${PROJECT_NAME}/DataStructures/cTree.h
 )
 
-message("Build type ${CLIPPED_BUILD_TYPE}")
-
 add_library(${PROJECT_NAME} ${CLIPPED_BUILD_TYPE}
     src/cString.cpp
     src/cPath.cpp
