@@ -9,7 +9,7 @@ set(${PROJECT_NAME}_PUBLIC_HEADER
     include/${PROJECT_NAME}/cBinStream.h
 )
 
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME} ${CLIPPED_BUILD_TYPE}
     src/cBinStream.cpp
     ${${PROJECT_NAME}_PUBLIC_HEADER}
 )

@@ -13,7 +13,7 @@ set(${PROJECT_NAME}_PUBLIC_HEADER
     include/${PROJECT_NAME}/Archives/cVdfsFile.h
 )
 
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME} ${CLIPPED_BUILD_TYPE}
     ${${PROJECT_NAME}_PUBLIC_HEADER}
     src/cFile.cpp
     src/cBinFile.cpp

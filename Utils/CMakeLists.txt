@@ -18,7 +18,7 @@ set(${PROJECT_NAME}_PUBLIC_HEADER
     include/${PROJECT_NAME}/DataStructures/cTree.h
 )
 
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME} ${CLIPPED_BUILD_TYPE}
     src/cString.cpp
     src/cPath.cpp
     src/cTime.cpp

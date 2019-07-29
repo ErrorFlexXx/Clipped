@@ -19,7 +19,7 @@ set(${PROJECT_NAME}_SOURCES
     src/cMultimeterHP34401A.cpp
 )
 
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME} ${CLIPPED_BUILD_TYPE}
     ${${PROJECT_NAME}_SOURCES}
     ${${PROJECT_NAME}_PUBLIC_HEADER}
 )
