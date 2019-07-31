@@ -153,27 +153,6 @@ bool ConfigFile::GetEntry(const String& key, String& target) const
     return false;
 }
 
-bool ConfigFile::GetEntry(const String& key, size_t& target) const
-{
-    auto it = keyPairs.find(key.toLower());
-    if(it != keyPairs.end())
-    {
-        int test = it->second.toInt();
-        if(0 <= test)
-        {
-            target = (size_t)it->second.toInt();
-            return true;
-        }
-        else //Negative numbers not allowed!
-        {
-            LogWarn() << "Invalid value range for config key \"" << key << "\" value: " << test << " must not be negative!";
-            return false;
-        }
-    }
-    //else key not found
-    return false;
-}
-
 bool ConfigFile::GetEntry(const String& key, bool& target) const
 {
     auto it = keyPairs.find(key.toLower());

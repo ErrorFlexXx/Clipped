@@ -69,9 +69,6 @@ namespace Clipped
         bool GetEntry(const String& key, String& target) const;
 
         /** @copydoc GetEntry(const String&,int&)const */
-        bool GetEntry(const String& key, size_t& target) const;
-
-        /** @copydoc GetEntry(const String&,int&)const */
         bool GetEntry(const String& key, bool& target) const;
 
     private:
