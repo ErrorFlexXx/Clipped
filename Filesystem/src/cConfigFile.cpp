@@ -120,6 +120,27 @@ bool ConfigFile::GetEntry(const String& key, unsigned short& target) const
     return false;
 }
 
+bool ConfigFile::GetEntry(const String& key, uint32_t& target) const
+{
+    auto it = keyPairs.find(key.toLower());
+    if(it != keyPairs.end())
+    {
+        int test = it->second.toInt();
+        if(0 <= test)
+        {
+            target = (uint32_t)it->second.toInt();
+            return true;
+        }
+        else //Negative numbers not allowed!
+        {
+            LogWarn() << "Invalid value range for config key \"" << key << "\" value: " << test << " must not be negative!";
+            return false;
+        }
+    }
+    //else key not found
+    return false;
+}
+
 bool ConfigFile::GetEntry(const String& key, String& target) const
 {
     auto it = keyPairs.find(key.toLower());
