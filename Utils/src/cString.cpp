@@ -190,6 +190,20 @@ std::vector<char> BasicString<T>::toVector() const
     return out;
 }
 
+template <class T>
+BasicString<T> BasicString<T>::toHexString() const
+{
+    BasicStringStream<T> stream;
+    for(const T& c : *this)
+    {
+        stream << std::hex << (unsigned int)c << " ";
+    }
+    BasicString<T> returned = stream.str();
+    if(!returned.empty())
+        returned = returned.substr(0, returned.length() - 1);
+    return returned;
+}
+
 template <>
 BasicString<char> BasicString<char>::fromAsci(const char* str)
 {

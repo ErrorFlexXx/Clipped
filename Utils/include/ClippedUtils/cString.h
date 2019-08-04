@@ -129,6 +129,12 @@ namespace Clipped
         std::vector<char> toVector() const;
 
         /**
+         * @brief toHexString creates a hexadecimal representation of the string.
+         * @return the hex representation as string.
+         */
+        BasicString<T> toHexString() const;
+
+        /**
          * @brief fromAsci sets this string from an ascii input.
          * @return a reference of this string.
          */
