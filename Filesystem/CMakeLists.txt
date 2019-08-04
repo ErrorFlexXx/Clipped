@@ -10,7 +10,8 @@ set(${PROJECT_NAME}_PUBLIC_HEADER
     include/${PROJECT_NAME}/cBinFile.h
     include/${PROJECT_NAME}/cTextFile.h
     include/${PROJECT_NAME}/cConfigFile.h
-    include/${PROJECT_NAME}/Archives/cVdfsFile.h
+    include/${PROJECT_NAME}/cIArchiver.h
+    include/${PROJECT_NAME}/Archives/cVdfsArchive.h
 )
 
 add_library(${PROJECT_NAME} ${CLIPPED_BUILD_TYPE}
@@ -19,7 +20,8 @@ add_library(${PROJECT_NAME} ${CLIPPED_BUILD_TYPE}
     src/cBinFile.cpp
     src/cTextFile.cpp
     src/cConfigFile.cpp
-    src/Archives/cVdfsFile.cpp
+    src/cIArchiver.cpp
+    src/Archives/cVdfsArchive.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ClippedUtils)

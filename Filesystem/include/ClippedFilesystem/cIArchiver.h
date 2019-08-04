@@ -18,17 +18,22 @@
 
 #include <ClippedUtils/cPath.h>
 #include <ClippedUtils/cMemory.h>
+#include <memory> //std::unique_ptr
 
 namespace Clipped
 {
     /**
      * @brief The class FileEntry represents an file object.
-     *  With this FileEntry a user can query the file data from an FileManager implementation.
+     *  With this FileEntry a user can query or add a file from or to an IArchiver implementation.
      */
     class FileEntry
     {
     public:
+        FileEntry();
+
         FileEntry(const Path& path, const MemorySize size, bool exists, bool override);
+
+        virtual ~FileEntry() {}
 
         const Path& GetPath() const; //!< Getter for the path.
 
@@ -38,29 +43,42 @@ namespace Clipped
 
         bool Override() const; //!< Getter for the override flag.
 
+        friend class VDFSArchive; //VDFS Archive needs to fill in data for an entry.
+
     private:
         Path path;      //!< The path of this entry - relative to the FileManager's basePath.
         MemorySize size;//!< The memory size of this entry in bytes.
         bool exists;    //!< Flag stating, if the file exists.
         bool override;  //!< Flag stating, if the file shall be overriden.
-    };
-
-
+    }; //class FileEntry
 
     /**
-     * @brief The IFileManager class implements an interface to list/read/write file entries in a hierachical organized file storage.
+     * @brief The IArchiver class implements an interface to list/read/write/update file entries in a hierachical organized file storages.
      *   This hierachical file storage could be a directory stored in the filesystem of the operating system or
      *   inside a virtual filesystem like a zip file or any other archive.
      */
-    class IFileManager
+    class IArchiver
     {
     public:
-        IFileManager(const Path& basePath);
+        IArchiver(const Path& basePath);
         
         /**
-         * @brief ~IFileManager the inheriting class dtor is called, if this instance gets destroyed.
+         * @brief ~IArchiver the inheriting class dtor is called, if this instance gets destroyed.
          */
-        virtual ~IFileManager();
+        virtual ~IArchiver();
+
+        /**
+         * @brief Open checks if this Archiver can work with the given basePath.
+         * @return true, if the initialization has been successfull.
+         */
+        virtual bool Open() = 0;
+
+        /**
+         * @brief Finalize function to actually write contents to disk. To be overriden, if required by archiver.
+         *   Required for some archivers, that can't change single entries, without updating an index or other data, too.
+         * @return true, if written successfully.
+         */
+        virtual bool Finalize();
 
         //TODO: Interface methods iterator based multifile access.
 
@@ -68,11 +86,12 @@ namespace Clipped
         /**
          * @brief GetFile looks up a file in the file storage.
          *   Note: A caller will always get a FileEntry object returned, that has e.g. the existing flag set.
-         * @param filename the name of the requested file.
+         * @param outFile handle to get informations about the file and the data later via ReadFile.
+         * @param filepath the filepath of the requested file.
          * @param ignoreCase flag specifying, if the case shall be ignored, or not.
-         * @return a file entry describing the file.
+         * @return true, if the outFile
          */
-        virtual FileEntry GetFile(const Path& filename, bool ignoreCase = false) const = 0;
+        virtual std::unique_ptr<FileEntry> GetFile(const Path& filepath) = 0;
 
         /**
          * @brief ReadFile reads the file data to the given dest pointer.
@@ -80,7 +99,7 @@ namespace Clipped
          * @param dest pointer to the memory to store the data at.
          * @return true, if the file has been read successfully.
          */
-        virtual bool ReadFile(const FileEntry& fileEntry, char* dest) const = 0;
+        virtual bool ReadFile(const FileEntry& fileEntry, char* dest) = 0;
 
         /**
          * @brief ReadFile reads the file data to the given data container.
@@ -96,7 +115,7 @@ namespace Clipped
          * @param src the data storage to be written.
          * @return true, if the file has been written successfully.
          */
-        virtual bool WriteFile(const FileEntry& fileEntry, const char* src) = 0;
+        //virtual bool WriteFile(const FileEntry& fileEntry, const char* src) = 0;
 
         /**
          * @brief WriteFile writes given data to the file storage from a std::vector containing the data.
@@ -104,10 +123,18 @@ namespace Clipped
          * @param src the data storage to be written.
          * @return true, if the file has been written successfully.
          */
-        virtual bool WriteFile(const FileEntry& fileEntry, const std::vector<char>& src) = 0;
+        //virtual bool WriteFile(const FileEntry& fileEntry, const std::vector<char>& src) = 0;
+
+        /**
+         * @brief GetBasePath returns the basePath of this instance.
+         *   This can be the directory path or the full path to the archive file, this implementation
+         *   works with.
+         * @return the basePath.
+         */
+        const Path& GetBasePath() const;
 
     protected:
         Path basePath; //!< Path to archive file or directory to work with.
-    };
+    }; //class IArchiver
 
 } //namespace Clipped

@@ -39,5 +39,13 @@ if(CLIPPED_BUILD_ECS)
     add_subdirectory(ECS)
 endif()
 
+# Add tests (has to be made here instead of in the subdirectories, because
+# they depend on the build libraries.
+if(CLIPPED_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(Utils/tests)
+    add_subdirectory(Filesystem/tests)
+endif()
+
 # Do not forget to target_link_libraries against ClippedUtils ClippedFilesystem ...
 # Use (e.g.) #include <ClippedUtils/cLogger.h> and work in namespace Clipped to use this library.

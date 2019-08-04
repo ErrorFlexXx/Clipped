@@ -92,7 +92,7 @@ namespace Clipped
          * @param key of the subtree.
          * @return true if it exists, false otherwise.
          */
-        bool subtreeExist(const I& key)
+        bool subtreeExist(const I& key) const
         {
             auto result = childs.find(key);
             return (result != childs.end());

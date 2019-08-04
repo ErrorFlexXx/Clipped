@@ -1,6 +1,13 @@
-#include "cFileManager.h"
+#include "cIArchiver.h"
 
 using namespace Clipped;
+
+FileEntry::FileEntry()
+    : path("")
+    , size(0)
+    , exists(false)
+    , override(false)
+{}
 
 FileEntry::FileEntry(const Path& path, const MemorySize size, bool exists, bool override)
     : path(path)
@@ -29,9 +36,20 @@ bool FileEntry::Override() const
     return override;
 }
 
-IFileManager::IFileManager(const Path& basePath)
+IArchiver::IArchiver(const Path& basePath)
     : basePath(basePath)
 {}
 
-IFileManager::~IFileManager()
+IArchiver::~IArchiver()
 {}
+
+bool IArchiver::Finalize()
+{
+    return true;    //By default no action and success.
+                    //To be overriden, if required by archiver type.
+}
+
+const Path& IArchiver::GetBasePath() const
+{
+    return basePath;
+}
