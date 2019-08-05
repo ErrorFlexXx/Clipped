@@ -1,10 +1,10 @@
 language: cpp
 
-os: linux
+os: 
+  - linux
 
 compiler:
   - gcc
-  - clang
 
 branches:
   only:
