@@ -28,8 +28,8 @@
 
 using namespace Clipped;
 
-SerialPort::SerialPort(const String& interface, const Settings& settings)
-    : ISerialPort(interface, settings)
+SerialPort::SerialPort(const String& interfaceName, const Settings& settings)
+    : ISerialPort(interfaceName, settings)
 {
     isOpen = false;
 }
@@ -51,10 +51,10 @@ bool SerialPort::open(const IODevice::OpenMode& mode)
         case IODevice::OpenMode::ReadWrite: flags |= O_RDWR; break;
     }
 
-    handle = ::open(interface.c_str(), flags);
+    handle = ::open(interfaceName.c_str(), flags);
     if(handle < 0)
     {
-        LogError() << "Can't open port: " << interface << " because: " << strerror(errno);
+        LogError() << "Can't open port: " << interfaceName << " because: " << strerror(errno);
         return false;
     }
     isOpen = true;
@@ -179,7 +179,7 @@ bool SerialPort::availableBytes(size_t& availableBytes) const
 
     if(-1 == ::ioctl(handle, TIOCINQ, &nread))
     {
-        LogError() << interface << " Error: " << errno << ": " << strerror(errno);
+        LogError() << interfaceName << " Error: " << errno << ": " << strerror(errno);
         return false;
     }
     availableBytes = static_cast<size_t>(nread);
@@ -239,7 +239,7 @@ bool SerialPort::sendBreak(size_t milliseconds)
 {
     if(-1 == tcsendbreak(handle, milliseconds))
     {
-        LogError() << interface << ": Error: " << errno << ": " << strerror(errno);
+        LogError() << interfaceName << ": Error: " << errno << ": " << strerror(errno);
         return false;
     }
     return true;
