@@ -1,6 +1,6 @@
 # Clipped 
 
-##Build informations:
+## Build informations:
 
 Master: [![Build status](https://ci.appveyor.com/api/projects/status/wfmymx0rithwj85l/branch/master?svg=true)](https://ci.appveyor.com/project/ChristianLpke/clipped/branch/master)
 
