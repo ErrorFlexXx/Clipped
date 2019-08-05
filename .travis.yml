@@ -1,8 +1,5 @@
 language: cpp
 
-compiler:
-  - gcc
-
 branches:
   only:
   - master
@@ -20,6 +17,7 @@ matrix:
             - gcc-7
       env:
         - CONFIG="DEBUG" MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        before_install: eval "${MATRIX_EVAL}"
     - os: linux
       addons:
         apt:
@@ -30,16 +28,14 @@ matrix:
             - gcc-7
       env:
         - CONFIG="RELEASE" MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+      before_install: eval "${MATRIX_EVAL}"
     - os: windows
       env:
         - CONFIG="DEBUG"
     - os: windows
+      compiler: 
       env:
         - CONFIG="RELEASE"
-
-before_install:
-    - eval "${MATRIX_EVAL}"
-    - eval "${CONFIG}"
 
 script:
   - mkdir build
