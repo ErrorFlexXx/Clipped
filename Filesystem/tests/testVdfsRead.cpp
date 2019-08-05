@@ -3,7 +3,7 @@
 
 using namespace Clipped;
 
-int checkFilesExist(VDFSArchive& archive);
+bool checkFilesExist(VDFSArchive& archive);
 
 int main(void)
 {
@@ -22,7 +22,7 @@ int main(void)
  * @param archive handle to archiver instance.
  * @return true if all files has been found, false otherwise.
  */
-int checkFilesExist(VDFSArchive& archive)
+bool checkFilesExist(VDFSArchive& archive)
 {
     bool result = true;
 
