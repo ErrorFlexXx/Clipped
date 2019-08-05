@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.9)
 
 project(Clipped)
 
+#Copy libraries next to executables.
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
 set(CLIPPED_BUILD_STATIC OFF CACHE BOOL "Build shared libraries, if off, static libs otherwise.")
 set(CLIPPED_BUILD_MATHS OFF CACHE BOOL "Build ClippedMaths library.")
 set(CLIPPED_BUILD_FILESYSTEM OFF CACHE BOOL "Build ClippedFilesystem library.")
