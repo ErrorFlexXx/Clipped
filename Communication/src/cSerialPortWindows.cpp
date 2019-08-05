@@ -21,26 +21,14 @@
 #include "cSerialPortWindows.h"
 #include <ClippedUtils/cLogger.h>
 #include <ClippedUtils/cTime.h>
+#include <ClippedEnvironment/cSystem.h>
 
 using namespace Clipped;
 
-String getLastErrorAsString()
+SerialPort::SerialPort(const String& interfaceName, const Settings& settings)
+    : ISerialPort(interfaceName, settings)
 {
-    DWORD errorMessageId = ::GetLastError();
-    if(errorMessageId == 0)
-        return "";
-
-    LPSTR messageBuffer = nullptr;
-    size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                                 NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
-    String message(messageBuffer, size);
-    LocalFree(messageBuffer);
-    return message;
-}
-
-SerialPort::SerialPort(const String& interface, const Settings& settings)
-    : ISerialPort(interface, settings)
-{
+    Logger() << Logger::MessageType::Debug;
     isOpen = false;
 }
 
@@ -51,26 +39,37 @@ SerialPort::~SerialPort()
 
 bool SerialPort::open(const IODevice::OpenMode& mode)
 {
-    this->mode = mode;
-    DWORD flags = 0;
-
-    switch(mode) //Attach access mode
+    DWORD access = 0;
+    switch(mode)
     {
-        case IODevice::OpenMode::Read: flags |= GENERIC_READ; break;
-        case IODevice::OpenMode::Write: flags |= GENERIC_WRITE; break;
-        case IODevice::OpenMode::ReadWrite: flags |= GENERIC_READ | GENERIC_WRITE; break;
+    case IODevice::OpenMode::Read:
+    {
+        access |= GENERIC_READ;
+        break;
+    }
+    case IODevice::OpenMode::Write:
+    {
+        access |= GENERIC_WRITE;
+        break;
+    }
+    case IODevice::OpenMode::ReadWrite:
+    {
+        access |= GENERIC_READ | GENERIC_WRITE;
+        break;
+    }
     }
 
-    handle = CreateFile(interface.c_str(),
-                        flags,
-                        0,
-                        0,
-                        OPEN_EXISTING,
-                        FILE_FLAG_OVERLAPPED,
-                        0);
+    handle = ::CreateFile( interfaceName.c_str(),
+           access,
+           0,
+           nullptr,
+           OPEN_EXISTING,
+           FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
+           nullptr);
+
     if(handle == INVALID_HANDLE_VALUE)
     {
-        LogError() << "Can't open port: " << interface << " because: " << getLastErrorAsString();
+        LogError() << "Can't open port: " << interfaceName << " because: " << System::getSystemErrorText();
         return false;
     }
     isOpen = true;
@@ -79,48 +78,107 @@ bool SerialPort::open(const IODevice::OpenMode& mode)
 
 bool SerialPort::config()
 {
-    //Baud rate setup:
-    DCB dcb;
+    // Do some basic settings
+    DCB serialParams = {};
+    serialParams.DCBlength = sizeof(serialParams);
 
-    FillMemory(&dcb, sizeof(dcb), 0);
-    if (!GetCommState(hComm, &dcb)) //Get current DCB
-        return false; // Error in GetCommState
+    memset( &overlappedRead, 0, sizeof( OVERLAPPED ) );
+    memset( &overlappedWrite, 0, sizeof( OVERLAPPED ) );
 
-    //Setup of Baudrate:
-    dcb.BaudRate = (DWORD) settings.baudrate;
-    dcb.ByteSize = settings.dataBits;
+    overlappedRead.hEvent = CreateEvent( nullptr, TRUE, FALSE, nullptr);
+    overlappedWrite.hEvent = CreateEvent( nullptr, TRUE, FALSE, nullptr );
 
-    switch(settings.parity)
+    GetCommState(handle, &serialParams);
+
+    switch(settings.baud)
     {
-        case ParityNone: dcb.Parity = NOPARITY; break;
-        case ParityEven: dcb.Parity = EVENPARITY; break;
-        case ParityOdd: dcb.Parity = ODDPARITY; break;
+        case Baud50: serialParams.BaudRate = 50; break;
+        case Baud75: serialParams.BaudRate = 75; break;
+        case Baud110: serialParams.BaudRate = CBR_110; break;
+        case Baud134: serialParams.BaudRate = 134; break;
+        case Baud150: serialParams.BaudRate = 150; break;
+        case Baud200: serialParams.BaudRate = 200; break;
+        case Baud300: serialParams.BaudRate = CBR_300; break;
+        case Baud600: serialParams.BaudRate = CBR_600; break;
+        case Baud1200: serialParams.BaudRate = CBR_1200; break;
+        case Baud1800: serialParams.BaudRate = 1800; break;
+        case Baud2400: serialParams.BaudRate = CBR_2400; break;
+        case Baud4800: serialParams.BaudRate = CBR_4800; break;
+        case Baud9600: serialParams.BaudRate = CBR_9600; break;
+        case Baud19200: serialParams.BaudRate = CBR_19200; break;
+        case Baud38400: serialParams.BaudRate = CBR_38400; break;
+        case Baud57600: serialParams.BaudRate = CBR_57600; break;
+        case Baud115200: serialParams.BaudRate = CBR_115200; break;
+        case Baud230400: serialParams.BaudRate = 230400; break;
     }
 
-    switch(settings.stopBits)
+    switch (settings.dataBits)
     {
-        case StopBits1: dcb.StopBits = ONESTOPBIT; break;
-        case StopBits2: dcb.StopBits = TWOSTOPBITS; break;
+        case DataBits5: serialParams.ByteSize = 5; break;
+        case DataBits6: serialParams.ByteSize = 6; break;
+        case DataBits7: serialParams.ByteSize = 7; break;
+        case DataBits8: serialParams.ByteSize = 8; break;
+    }
+
+    switch (settings.stopBits)
+    {
+    case StopBits1: serialParams.StopBits = ONESTOPBIT; break;
+    case StopBits2: serialParams.StopBits = TWOSTOPBITS; break;
+    }
+
+    switch (settings.parity)
+    {
+        case ParityNone: serialParams.Parity = NOPARITY; break;
+        case ParityEven: serialParams.Parity = EVENPARITY; break;
+        case ParityOdd: serialParams.Parity = ODDPARITY; break;
     }
 
     switch(settings.flowControl)
     {
-        case FlowControlNone:
-        {
-            dcb.fOutX = false;
-            dcb.fInX = false;
-            dcb.fDtrControl = DTR_CONTROL_DISABLE;
-            break;
-        }
+    case FlowControlNone:
+        serialParams.fDtrControl = DTR_CONTROL_DISABLE;
+        serialParams.fRtsControl = RTS_CONTROL_DISABLE;
+        serialParams.fInX = 0;
+        serialParams.fOutX = 0;
+        break;
+    case FlowControlHardwareHandshake:
+        serialParams.fDtrControl = DTR_CONTROL_ENABLE;
+        serialParams.fRtsControl = RTS_CONTROL_ENABLE;
+        serialParams.fInX = 0;
+        serialParams.fOutX = 0;
+        break;
     }
 
-    if (!SetCommState(handle, &dcb))
+    if (!::SetCommMask(handle, EV_RXCHAR))
     {
-       LogError() << "Com port setup failed: " << getLastErrorAsString();
-       return false;
+        LogError() << "Faild enable read: " << System::getSystemErrorText();
+        return false;
     }
 
-    LogDebug() << "Configuring serial port done!";
+    COMMTIMEOUTS timeouts;
+    timeouts.ReadIntervalTimeout            = MAXDWORD;
+    timeouts.ReadTotalTimeoutMultiplier		= 0;
+    timeouts.ReadTotalTimeoutConstant       = 0;
+    timeouts.WriteTotalTimeoutMultiplier    = 0;
+    timeouts.WriteTotalTimeoutConstant      = 0;
+
+    if (!::SetCommTimeouts(handle, &timeouts))
+    {
+        LogError() << "Faild config timeouts: " << System::getSystemErrorText();
+        return false;
+    }
+
+    if(!SetCommState(handle, &serialParams))
+    {
+        LogError() << "Problem: " << System::getSystemErrorText();
+        return false;
+    }
+
+    if(!SetupComm(handle, 10000, 10000))
+    {
+        LogError() << "Problem: " << System::getSystemErrorText();
+        return false;
+    }
     return true;
 }
 
@@ -134,35 +192,33 @@ bool SerialPort::availableBytes(size_t& availableBytes) const
 {
     DWORD errors;
     COMSTAT stat;
-
     if(!ClearCommError(handle, &errors, &stat))
     {
-        LogError() << "Failed: " << getLastErrorAsString();
+        LogError() << "Cannot get port status.";
         return false;
     }
-
-    if(0 <= stat.cbInQue)
-    {
-        availableBytes = static_cast<size_t>(stat.cbInQue);
-        return true;
-    }
-    return false;
+    availableBytes = static_cast<size_t>(stat.cbInQue);
+    if(availableBytes > 0) LogDebug() << "Some data available on port!";
+    return true;
 }
 
 bool SerialPort::write(const String& data)
 {
-    LogDebug() << "Serial write: " << String(data).replace("\n", "");
-    DWORD bytesWritten;
-
-    return WriteFile(handle, data.c_str(), data.length(), &bytesWritten, NULL);
+    return write(data.toVector());
 }
 
 bool SerialPort::write(const std::vector<char>& data)
 {
-    LogDebug() << "Serial write: " << String(data).replace("\n", "");
     DWORD bytesWritten;
-
-    return WriteFile(handle, data.data(), data.length(), &bytesWritten, NULL);
+    LogDebug() << "Serial write: " << String(data).replace("\n", "");
+    BOOL status;
+    if((status = !WriteFile(handle, data.data(), static_cast<DWORD>(data.size()), &bytesWritten, &overlappedWrite)))
+    {
+        if(status == ERROR_IO_PENDING)
+            WaitForSingleObject(overlappedWrite.hEvent, 100);
+        return false;
+    }
+    return bytesWritten == data.size();
 }
 
 bool SerialPort::readAll(std::vector<char>& data)
@@ -179,45 +235,45 @@ bool SerialPort::readAll(std::vector<char>& data)
 
 bool SerialPort::read(std::vector<char>& data, size_t count)
 {
-    char buff[1] = {};
-    int result;
-
+    char buffer;
+    DWORD bytesRead;
     for(size_t i = 0; i < count; i++)
     {
-        DWORD bytesRead;
-        result = ReadFile(handle, buff, 1, &bytesRead, NULL);
-        if(result && bytesRead)
-            data.push_back(buff[0]);
-        else if(!result)
+        BOOL status;
+        if(!(status = ReadFile(handle, &buffer, 1, &bytesRead, &overlappedRead)))
         {
-            LogDebug() << "Serial Port read failed: " << getLastErrorAsString();
-            return false;
+            if(status == ERROR_IO_PENDING)
+            {
+                WaitForSingleObject(overlappedRead.hEvent, 100);
+                return false;
+            }
         }
-        else
-            return false;
+        data.push_back(buffer);
     }
     return true;
 }
 
 bool SerialPort::sendBreak(size_t milliseconds)
 {
-    if(!SetCommBreak(handle))
-    {
-        LogError() << "Break not supported: " << getLastErrorAsString();
-        return false;
-    }
-    Sleep(milliseconds);
+    //Note: Seems to be the only possibility to get a break on windows.
+    SetCommBreak(handle);
+    System::mSleep(milliseconds);
     ClearCommBreak(handle);
     return true;
 }
 
 bool SerialPort::close()
 {
-    if(handle != INVALID_HANDLE_VALUE) //If there
-        CloseHandle(handle);
-
-    handle = 0;
+    if(handle != INVALID_HANDLE_VALUE)
+        if(!CloseHandle(handle))
+        {
+            LogDebug() << "Serial port close error: " << GetLastError << ": " << System::getSystemErrorText();
+            return false;
+        }
+    if(overlappedRead.hEvent != nullptr) CloseHandle(overlappedRead.hEvent);
+    if(overlappedWrite.hEvent != nullptr) CloseHandle(overlappedWrite.hEvent);
     isOpen = false;
+    handle = INVALID_HANDLE_VALUE;
     return true;
 }
 

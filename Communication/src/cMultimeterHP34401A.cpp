@@ -1,6 +1,6 @@
 #include "cMultimeterHP34401A.h"
 #include <ClippedUtils/cLogger.h>
-#include <unistd.h>
+#include <ClippedEnvironment/cSystem.h>
 
 using namespace Clipped;
 
@@ -15,7 +15,7 @@ MultimeterHP34401A::~MultimeterHP34401A()
     if(device)
     {
         device->close();
-        while(comWorkerRunning) usleep(1000);
+        while(comWorkerRunning) System::mSleep(1);
         delete device;
     }
 }
@@ -32,7 +32,7 @@ void MultimeterHP34401A::comWorkerRoutine()
             processResponse();
         }
         if(device->getIsOpen())
-            usleep(100000);
+            System::mSleep(100);
     }
     comWorkerRunning = false;
 }

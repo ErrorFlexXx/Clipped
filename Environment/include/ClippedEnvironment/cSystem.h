@@ -77,6 +77,18 @@ namespace Clipped
          * @return number of cpu cores.
          */
         static int getTotalCpus();
+
+        /**
+         * @brief msleep let's the current thread sleep for some time.
+         * @param milliseconds to sleep.
+         */
+        static void mSleep(size_t milliseconds);
+
+        /**
+         * @brief GetSystemErrorText returns the current error text of the os api.
+         * @return an error string.
+         */
+        static String getSystemErrorText();
     };
 
 }  // namespace Clipped

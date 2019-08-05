@@ -19,22 +19,19 @@
 #include <ClippedUtils/cString.h>
 #include <ClippedUtils/cOsDetect.h>
 #include "cSerialPortInterface.h"
-
-#include <windows.h>
+#include <Windows.h>
 
 namespace Clipped
 {
-    String getWindowsLastErrorAsString();
-
     /**
      * @brief The SerialPort class is the implementation of a serial interface.
      */
     class SerialPort : public ISerialPort
     {
     public:
-        SerialPort(const String& interface, const Settings& settings);
+        SerialPort(const String& interfaceName, const Settings& settings);
 
-        virtual ~SerialPort();
+        virtual ~SerialPort() override;
 
         /**
          * @brief open opens the serial interface and configures it.
@@ -114,6 +111,7 @@ namespace Clipped
         virtual bool close() override;
 
     private:
-        HANDLE handle; //!< Windows file handle to serial port.
+        HANDLE handle;
+        OVERLAPPED overlappedRead, overlappedWrite;
     };
 } //namespace Clipped

@@ -26,7 +26,7 @@ add_library(${PROJECT_NAME} ${CLIPPED_BUILD_TYPE}
     ${${PROJECT_NAME}_PUBLIC_HEADER}
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ClippedUtils)
+target_link_libraries(${PROJECT_NAME} PRIVATE ClippedUtils ClippedEnvironment)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     VERSION ${PROJECT_VERSION}
