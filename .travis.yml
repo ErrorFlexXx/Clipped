@@ -17,7 +17,7 @@ matrix:
             - g++-7
             - gcc-7
       env:
-        - CONFIG="CONFIG=DEBUG" MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - CONFIG="CONFIG=Debug" MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       before_install:
         - eval "${MATRIX_EVAL}"
         - eval "${CONFIG}"
@@ -31,20 +31,20 @@ matrix:
             - g++-7
             - gcc-7
       env:
-        - CONFIG="CONFIG=RELEASE" MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - CONFIG="CONFIG=Release" MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       before_install:
         - eval "${MATRIX_EVAL}"
         - eval "${CONFIG}"
     # Visual Studio Debug build Windows
     - os: windows
       env:
-        - CONFIG="CONFIG=DEBUG"
+        - CONFIG="CONFIG=Debug"
       before_install:
         - eval "${CONFIG}"
     # Visual Studio Release build Windows
     - os: windows
       env:
-        - CONFIG="CONFIG=RELEASE"
+        - CONFIG="CONFIG=Release"
       before_install:
         - eval "${CONFIG}"
 
@@ -52,5 +52,5 @@ script:
   - mkdir build
   - cd build
   - cmake -DCMAKE_BUILD_TYPE=${CONFIG} -DCLIPPED_BUILD_COMMUNICATION=ON -DCLIPPED_BUILD_DATASTREAMS=ON -DCLIPPED_BUILD_ECS=ON -DCLIPPED_BUILD_ENVIRONMENT=ON -DCLIPPED_BUILD_FILESYSTEM=ON -DCLIPPED_BUILD_MATHS=ON -DCLIPPED_BUILD_TESTS=ON ..
-  - cmake --build .
+  - cmake --build --config ${CONFIG} .
   - ctest -C ${CONFIG}
