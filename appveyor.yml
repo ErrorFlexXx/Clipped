@@ -18,8 +18,8 @@ for:
   matrix:
     only:
       - image: Ubuntu
-    build_script:
-      - make
+  build_script:
+  - make
 
 test_script:
   - ctest
