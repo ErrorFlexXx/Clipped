@@ -32,44 +32,44 @@ namespace Clipped
         ConfigFile(const Path& filepath, const String& delim);
 
         /**
-         * @brief ReadAll reads the entire config from a file.
+         * @brief readAll reads the entire config from a file.
          * @param delim to split keys and entries with.
          * @return true if all entries has been read successfully, false otherwise.
          */
-        bool ReadAll();
+        bool readAll();
 
         /**
-         * @brief WriteAll writes all entries back to file.
+         * @brief writeAll writes all entries back to file.
          * @return true, if written successfully.
          */
-        bool WriteAll();
+        bool writeAll();
 
         /**
-         * @brief GetEntries get reference to entries.
+         * @brief getEntries get reference to entries.
          *   You may modify it and call writeAll afterwards to write new entries or remove some.
          * @return a reference to the internal container of key value pairs.
          */
-        std::list<std::pair<String, String>>& GetEntries();
+        std::list<std::pair<String, String>>& getEntries();
 
         /**
-         * @brief GetEntry writes the value of this overloaded type to target, if the key exists in the data set.
+         * @brief getEntry writes the value of this overloaded type to target, if the key exists in the data set.
          * @param key to lookup
          * @param target to write the data to.
          * @return true, if the entry has been found.
          */
-        bool GetEntry(const String& key, int& target) const;
+        bool getEntry(const String& key, int& target) const;
 
-        /** @copydoc GetEntry(const String&,int&)const */
-        bool GetEntry(const String& key, unsigned short& target) const;
+        /** @copydoc getEntry(const String&,int&)const */
+        bool getEntry(const String& key, unsigned short& target) const;
 
-        /** @copydoc GetEntry(const String&,int&)const */
-        bool GetEntry(const String& key, uint32_t& target) const;
+        /** @copydoc getEntry(const String&,int&)const */
+        bool getEntry(const String& key, uint32_t& target) const;
 
-        /** @copydoc GetEntry(const String&,int&)const */
-        bool GetEntry(const String& key, String& target) const;
+        /** @copydoc getEntry(const String&,int&)const */
+        bool getEntry(const String& key, String& target) const;
 
-        /** @copydoc GetEntry(const String&,int&)const */
-        bool GetEntry(const String& key, bool& target) const;
+        /** @copydoc getEntry(const String&,int&)const */
+        bool getEntry(const String& key, bool& target) const;
 
     private:
         std::list<std::pair<String, String>> entries; //Config entries - used for writing entries back with blank lines and all.

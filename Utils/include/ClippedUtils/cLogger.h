@@ -64,45 +64,45 @@ namespace Clipped
         /**
          * @brief ~Logger destroys this Logger (Message) instance and triggers message output.
          */
-        ~Logger() { Flush(); }
+        ~Logger() { flush(); }
 
         /**
-         * @brief EnableLogfile start logging of all messages to a file.
+         * @brief enableLogfile start logging of all messages to a file.
          * @param filepath full path to logfile.
          */
-        void EnableLogfile(const char* filepath) { Flush(MessageType::MessageTypeCount, filepath); }
+        void enableLogfile(const char* filepath) { flush(MessageType::MessageTypeCount, filepath); }
 
         /**
-         * @brief DisableLogfile stops the logging of all messages to a file.
+         * @brief disableLogfile stops the logging of all messages to a file.
          */
-        void DisableLogfile()
+        void disableLogfile()
         {
-            Flush(MessageType::MessageTypeCount, reinterpret_cast<const char*>(-1));
+            flush(MessageType::MessageTypeCount, reinterpret_cast<const char*>(-1));
         }
 
         /**
-         * @brief ClearLogfile deletes the current log file and creates a new one.
+         * @brief clearLogfile deletes the current log file and creates a new one.
          */
-        void ClearLogfile()
+        void clearLogfile()
         {
-            Flush(MessageType::MessageTypeCount, reinterpret_cast<const char*>(-2));
+            flush(MessageType::MessageTypeCount, reinterpret_cast<const char*>(-2));
         }
 
         /**
-         * @brief SetCallbackFunction installs a callback func. that gets called
+         * @brief setCallbackFunction installs a callback func. that gets called
          *   every time a log message is ready.
          */
-        void SetCallbackFunction(std::function<void(MessageType, const String&)> callback)
+        void setCallbackFunction(std::function<void(MessageType, const String&)> callback)
         {
-            Flush(MessageType::MessageTypeCount, nullptr, &callback);
+            flush(MessageType::MessageTypeCount, nullptr, &callback);
         }
 
         /**
-         * @brief ResetCallbackFunction removes the currently installed callback function.
+         * @brief resetCallbackFunction removes the currently installed callback function.
          */
-        void ResetCallbackFunction()
+        void resetCallbackFunction()
         {
-            Flush(MessageType::MessageTypeCount, nullptr,
+            flush(MessageType::MessageTypeCount, nullptr,
                   reinterpret_cast<std::function<void(MessageType, const String&)>*>(-1));
         }
 
@@ -113,7 +113,7 @@ namespace Clipped
          */
         inline Logger& operator<<(const MessageType obj)
         {
-            Flush(obj);
+            flush(obj);
             return *this;
         }
 
@@ -141,7 +141,7 @@ namespace Clipped
          * @brief GetDecoratedOutput - Builds the final output from type and message.
          * @return the log text.
          */
-        String GetDecoratedOutput() const
+        String getDecoratedOutput() const
         {
             String output, strMessage;
             strMessage.append(message.str());
@@ -183,12 +183,12 @@ namespace Clipped
         }
 
         /**
-         * @brief Flush is the function, that actually outputs the log message.
+         * @brief flush is the function, that actually outputs the log message.
          * @param switchLogLevel used to change the current log level of the Logger.
          * @param setLogFilepath used to set the log filepath and used as control var (clear log,
          * disable, ...)
          */
-        void Flush(MessageType switchLogLevel = MessageType::MessageTypeCount,
+        void flush(MessageType switchLogLevel = MessageType::MessageTypeCount,
                    const char* setLogFilepath = nullptr,
                    std::function<void(MessageType, const String&)>* setCallback = nullptr)
         {
@@ -238,7 +238,7 @@ namespace Clipped
             }
             else if (logLevel <= type)
             {
-                String output = GetDecoratedOutput();
+                String output = getDecoratedOutput();
                 if (0 < output.length())  // Do not output empty messages
                 {
                     // Log callback task:

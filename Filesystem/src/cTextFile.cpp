@@ -26,7 +26,7 @@ bool TextFile::open(const FileAccessMode& accessMode)
     return File::open(accessMode, FileDataMode::TEXT);
 }
 
-bool TextFile::ReadString(String& str, size_t count)
+bool TextFile::readString(String& str, size_t count)
 {
     char* buffer = new char[count + 1];
     if (buffer)
@@ -45,14 +45,14 @@ bool TextFile::ReadString(String& str, size_t count)
     return false;
 }
 
-bool TextFile::WriteString(const String& str)
+bool TextFile::writeString(const String& str)
 {
     file.write(str.c_str(),
                static_cast<long>(str.length()));  // Write string incl. 0 termination.
     return file.good();
 }
 
-bool TextFile::ReadLine(String &lineOut, const char terminationChar)
+bool TextFile::readLine(String &lineOut, const char terminationChar)
 {
     lineOut.clear();
 
@@ -60,7 +60,7 @@ bool TextFile::ReadLine(String &lineOut, const char terminationChar)
     return file.good();
 }
 
-bool TextFile::WriteLine(const String &lineIn, const char terminationChar)
+bool TextFile::writeLine(const String &lineIn, const char terminationChar)
 {
     file.write(lineIn.c_str(), lineIn.length());
     file.write(&terminationChar, 1);

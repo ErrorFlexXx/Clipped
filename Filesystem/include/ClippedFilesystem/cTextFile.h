@@ -38,35 +38,35 @@ namespace Clipped
         bool open(const FileAccessMode& accessMode);
 
         /**
-         * @brief ReadString reads a string from the file.
+         * @brief readString reads a string from the file.
          * @param str to store the string in.
          * @param count amount of bytes to be casted to a string.
          * @return true, if successfully read, false otherwise.
          */
-        bool ReadString(String& str, size_t count);
+        bool readString(String& str, size_t count);
 
         /**
-         * @brief WriteString writes a string to the file without terminaton.
+         * @brief writeString writes a string to the file without terminaton.
          * @param str to write to the file.
          * @return true, if successfully written, false otherwise.
          */
-        bool WriteString(const String& str);
+        bool writeString(const String& str);
 
         /**
-         * @brief ReadLine reads a line from the file with given termination ('\n' is default).
+         * @brief readLine reads a line from the file with given termination ('\n' is default).
          * @param lineOut String to read the line to.
          * @param terminationChar to detect a line end with.
          * @return true, if a line has been read, false otherwise.
          */
-        bool ReadLine(String &lineOut, const char terminationChar = '\n');
+        bool readLine(String &lineOut, const char terminationChar = '\n');
 
         /**
-         * @brief WriteLine writes a line to the file with given termination ('\n' is default).
+         * @brief writeLine writes a line to the file with given termination ('\n' is default).
          * @param lineIn line to write to the file.
          * @param terminationChar to use.
          * @return true, if the line has been written successfully, false otherwise.
          */
-        bool WriteLine(const String &lineIn, const char terminationChar = '\n');
+        bool writeLine(const String &lineIn, const char terminationChar = '\n');
 
     }; //class TextFile
 }  // namespace Clipped

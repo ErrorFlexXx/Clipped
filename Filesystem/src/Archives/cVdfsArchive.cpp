@@ -31,7 +31,7 @@ VDFSArchive::VDFSArchive(const Path& filepath)
 {
 }
 
-bool VDFSArchive::Open()
+bool VDFSArchive::open()
 {
     bool result = file.open(FileAccessMode::READ_ONLY);
     if (!result)
@@ -62,6 +62,11 @@ bool VDFSArchive::readVDFSIndex()
     return entriesRead == header.entryCount;
 }
 
+bool VDFSArchive::writeVDFSIndex()
+{
+
+}
+
 size_t VDFSArchive::createIndexTree(Tree<String, VdfsEntry>& tree)
 {
     size_t subtreeCount = 0; //Reminder of subtrees to join (Hierachical read).
@@ -72,11 +77,11 @@ size_t VDFSArchive::createIndexTree(Tree<String, VdfsEntry>& tree)
         VdfsEntry entry;
         bool interpretResult = true;
 
-        if (interpretResult) interpretResult = file.ReadString(entry.vdfs_name, EntryNameLength);
-        if (interpretResult) interpretResult = file.Read(entry.vdfs_offset);
-        if (interpretResult) interpretResult = file.Read(entry.vdfs_size);
-        if (interpretResult) interpretResult = file.Read(entry.vdfs_type);
-        if (interpretResult) interpretResult = file.Read(entry.vdfs_attribute);
+        if (interpretResult) interpretResult = file.readString(entry.vdfs_name, EntryNameLength);
+        if (interpretResult) interpretResult = file.read(entry.vdfs_offset);
+        if (interpretResult) interpretResult = file.read(entry.vdfs_size);
+        if (interpretResult) interpretResult = file.read(entry.vdfs_type);
+        if (interpretResult) interpretResult = file.read(entry.vdfs_attribute);
 
         if(interpretResult) //If all entry data has been successfully read from file
         {
@@ -122,7 +127,7 @@ size_t VDFSArchive::createIndexTree(Tree<String, VdfsEntry>& tree)
     return header.entryCount; //Never reached in general, cause all stages are terminated with LAST entries.
 }
 
-std::unique_ptr<FileEntry> VDFSArchive::GetFile(const Path& filepath)
+std::unique_ptr<FileEntry> VDFSArchive::getFile(const Path& filepath)
 {
     Path dir = filepath.getDirectory();
     Path file = filepath.getFilenameWithExt();
@@ -151,7 +156,7 @@ std::unique_ptr<FileEntry> VDFSArchive::GetFile(const Path& filepath)
     return std::unique_ptr<VdfsEntry>(new VdfsEntry(filepath, 0, 0, 0));
 }
 
-bool VDFSArchive::ReadFile(const FileEntry& fileEntry, char* dest)
+bool VDFSArchive::readFile(const FileEntry& fileEntry, char* dest)
 {
     const VdfsEntry* vdfsEntry = dynamic_cast<const VdfsEntry*>(&fileEntry);
     if(!vdfsEntry)
@@ -162,7 +167,7 @@ bool VDFSArchive::ReadFile(const FileEntry& fileEntry, char* dest)
 
     file.setPosition(vdfsEntry->vdfs_offset); //Set filepointer to fileEntry inside the vdfs.
 
-    if (!file.ReadBytes(dest, vdfsEntry->vdfs_size))
+    if (!file.readBytes(dest, vdfsEntry->vdfs_size))
     {
         LogError() << "Error while reading from file.";
         return false;
@@ -170,7 +175,7 @@ bool VDFSArchive::ReadFile(const FileEntry& fileEntry, char* dest)
     return true; //Successfully read the file data.
 }
 
-bool VDFSArchive::ReadFile(const FileEntry& fileEntry, std::vector<char>& dest)
+bool VDFSArchive::readFile(const FileEntry& fileEntry, std::vector<char>& dest)
 {
     const VdfsEntry* vdfsEntry = dynamic_cast<const VdfsEntry*>(&fileEntry);
     if(!vdfsEntry)
@@ -181,7 +186,7 @@ bool VDFSArchive::ReadFile(const FileEntry& fileEntry, std::vector<char>& dest)
 
     file.setPosition(vdfsEntry->vdfs_offset); //Set filepointer to fileEntry inside the vdfs.
 
-    if (!file.ReadBytes(dest, vdfsEntry->vdfs_size))
+    if (!file.readBytes(dest, vdfsEntry->vdfs_size))
     {
         LogError() << "Error while reading from file.";
         return false;
@@ -193,14 +198,14 @@ bool VDFSArchive::readHeader(VDFSArchive::Header& header)
 {
     bool result = true;
 
-    if (result) result = file.ReadString(header.comment, 256);
-    if (result) result = file.ReadString(header.signature, 16);
-    if (result) result = file.Read(header.entryCount);
-    if (result) result = file.Read(header.fileCount);
-    if (result) result = file.Read(header.creationTime);
-    if (result) result = file.Read(header.contentSize);
-    if (result) result = file.Read(header.rootOffset);
-    if (result) result = file.Read(header.entrySize);
+    if (result) result = file.readString(header.comment, VDFSArchive::CommentLength);
+    if (result) result = file.readString(header.signature, VDFSArchive::SignatureLength);
+    if (result) result = file.read(header.entryCount);
+    if (result) result = file.read(header.fileCount);
+    if (result) result = file.read(header.creationTime);
+    if (result) result = file.read(header.contentSize);
+    if (result) result = file.read(header.rootOffset);
+    if (result) result = file.read(header.entrySize);
 
     header.comment = header.comment.trim(CommentFillChar);
 
@@ -215,27 +220,27 @@ bool VDFSArchive::writeHeader(const VDFSArchive::Header& header)
     {
         LogWarn() << "Header comment too large (" << header.comment.length()
                   << ")! Cutted to max length (" << CommentLength << ").";
-        if (result) result = file.WriteString(header.comment.substr(0, CommentLength));
+        if (result) result = file.writeString(header.comment.substr(0, CommentLength));
     }
     else  // Comment size ok
         if (result)
-        result = file.WriteString(header.comment.fill(CommentFillChar, CommentLength));
+        result = file.writeString(header.comment.fill(CommentFillChar, CommentLength));
 
     if (result && header.signature.length() > SignatureLength)
     {
         LogWarn() << "Header signature too large (" << header.signature.length()
                   << ")! Cutted to max length (" << SignatureLength << ").";
-        if (result) result = file.WriteString(header.signature.substr(0, SignatureLength));
+        if (result) result = file.writeString(header.signature.substr(0, SignatureLength));
     }
     else  // Signature size ok
         if (result)
-        result = file.WriteString(header.signature.fill(" ", SignatureLength));
-    if (result) result = file.Write(header.entryCount);
-    if (result) result = file.Write(header.fileCount);
-    if (result) result = file.Write(header.creationTime);
-    if (result) result = file.Write(header.contentSize);
-    if (result) result = file.Write(header.rootOffset);
-    if (result) result = file.Write(header.entrySize);
+        result = file.writeString(header.signature.fill(" ", SignatureLength));
+    if (result) result = file.write(header.entryCount);
+    if (result) result = file.write(header.fileCount);
+    if (result) result = file.write(header.creationTime);
+    if (result) result = file.write(header.contentSize);
+    if (result) result = file.write(header.rootOffset);
+    if (result) result = file.write(header.entrySize);
 
     return result;
 }

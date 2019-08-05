@@ -38,11 +38,11 @@ namespace Clipped
         bool open(const FileAccessMode& accessMode);
 
         /**
-         * @brief Read template for types. Reads any specified type from the file.
+         * @brief read template for types. Reads any specified type from the file.
          * @param value reference to value to read in.
          */
         template <typename T>
-        bool Read(T& value)
+        bool read(T& value)
         {
             char buffer[sizeof(T)];
             file.read(buffer, sizeof(T));
@@ -55,76 +55,76 @@ namespace Clipped
         }
 
         /**
-         * @brief Read template for types. Reads any specified type from the file.
+         * @brief write template for types. Reads any specified type from the file.
          * @param value reference to value to read in.
          */
         template <typename T>
-        bool Write(const T& value)
+        bool write(const T& value)
         {
             file.write(reinterpret_cast<const char*>(&value), sizeof(T));
             return file.good();
         }
 
         /**
-         * @brief ReadBytes reads count bytes to buffer.
+         * @brief readBytes reads count bytes to buffer.
          * @param buffer to store the bytes in..
          * @param count amount of bytes to read.
          * @return true, if successfully read, false otherwise.
          */
-        bool ReadBytes(char*& buffer, size_t count);
+        bool readBytes(char*& buffer, size_t count);
 
         /**
-         * @brief ReadBytes read count bytes to vector
+         * @brief readBytes read count bytes to vector
          * @param buffer vector to store bytes in.
          * @param count amount of bytes to read.
          * @return true, if successfully read, false otherwise.
          */
-        bool ReadBytes(std::vector<char>& buffer, size_t count);
+        bool readBytes(std::vector<char>& buffer, size_t count);
 
         /**
-         * @brief WriteBytes writes count bytes to file.
+         * @brief writeBytes writes count bytes to file.
          * @param buffer that contains the bytes to write.
          * @param count amount of bytes to be written.
          * @return true, if written successfully, false otherwise.
          */
-        bool WriteBytes(const char*& buffer, size_t count);
+        bool writeBytes(const char*& buffer, size_t count);
 
         /**
-         * @brief WriteBytes write count bytes from buffer + offset to file.
+         * @brief writeBytes write count bytes from buffer + offset to file.
          * @param buffer that contains the data to be written.
          * @param index offset from buffer start to start write from.
          * @param count amount of bytes to be written.
          * @return true, if successfully written, false otherwise.
          */
-        bool WriteBytes(const char*& buffer, size_t index, size_t count);
+        bool writeBytes(const char*& buffer, size_t index, size_t count);
 
         /**
-         * @brief WriteBytes writes a whole vector to file.
+         * @brief writeBytes writes a whole vector to file.
          * @param buffer vector data to write.
          * @return true on success, false otherwise.
          */
-        bool WriteBytes(const std::vector<char>& buffer);
+        bool writeBytes(const std::vector<char>& buffer);
 
         /**
-         * @brief ReadString reads a string from the file.
+         * @brief readString reads a string from the file.
          * @param str to store the string in.
          * @param count amount of bytes to be casted to a string.
          * @return true, if successfully read, false otherwise.
          */
-        bool ReadString(String& str, size_t count);
+        bool readString(String& str, size_t count);
 
         /**
-         * @brief WriteString writes a string to the file without terminaton.
+         * @brief writeString writes a string to the file without terminaton.
          * @param str to write to the file.
          * @return true, if successfully written, false otherwise.
          */
-        bool WriteString(const String& str);
+        bool writeString(const String& str);
 
         /**
-         * @brief WriteStringTerminated writes a string with 0 termination to the file.
+         * @brief writeStringTerminated writes a string with 0 termination to the file.
          * @param str to write to the file.
          * @return true, if successfully written, false otherwise.
          */
-        bool WriteStringTerminated(const String& str);
+        bool writeStringTerminated(const String& str);
     };
 }  // namespace Clipped

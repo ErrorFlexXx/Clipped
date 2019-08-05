@@ -35,13 +35,13 @@ namespace Clipped
 
         virtual ~FileEntry() {}
 
-        const Path& GetPath() const; //!< Getter for the path.
+        const Path& getPath() const; //!< Getter for the path.
 
-        const MemorySize GetSize() const; //!< Getter for the size.
+        const MemorySize getSize() const; //!< Getter for the size.
 
-        bool Exists() const; //!< Getter for the exists flag.
+        bool getExists() const; //!< Getter for the exists flag.
 
-        bool Override() const; //!< Getter for the override flag.
+        bool getOverride() const; //!< Getter for the override flag.
 
         friend class VDFSArchive; //VDFS Archive needs to fill in data for an entry.
 
@@ -68,70 +68,70 @@ namespace Clipped
         virtual ~IArchiver();
 
         /**
-         * @brief Open checks if this Archiver can work with the given basePath.
+         * @brief open checks if this Archiver can work with the given basePath.
          * @return true, if the initialization has been successfull.
          */
-        virtual bool Open() = 0;
+        virtual bool open() = 0;
 
         /**
-         * @brief Finalize function to actually write contents to disk. To be overriden, if required by archiver.
+         * @brief finalize function to actually write contents to disk. To be overriden, if required by archiver.
          *   Required for some archivers, that can't change single entries, without updating an index or other data, too.
          * @return true, if written successfully.
          */
-        virtual bool Finalize();
+        virtual bool finalize();
 
         //TODO: Interface methods iterator based multifile access.
 
         //Interface methods (Single file access):
         /**
-         * @brief GetFile looks up a file in the file storage.
+         * @brief getFile looks up a file in the file storage.
          *   Note: A caller will always get a FileEntry object returned, that has e.g. the existing flag set.
          * @param outFile handle to get informations about the file and the data later via ReadFile.
          * @param filepath the filepath of the requested file.
          * @param ignoreCase flag specifying, if the case shall be ignored, or not.
          * @return true, if the outFile
          */
-        virtual std::unique_ptr<FileEntry> GetFile(const Path& filepath) = 0;
+        virtual std::unique_ptr<FileEntry> getFile(const Path& filepath) = 0;
 
         /**
-         * @brief ReadFile reads the file data to the given dest pointer.
+         * @brief readFile reads the file data to the given dest pointer.
          * @param fileEntry describing the file to read.
          * @param dest pointer to the memory to store the data at.
          * @return true, if the file has been read successfully.
          */
-        virtual bool ReadFile(const FileEntry& fileEntry, char* dest) = 0;
+        virtual bool readFile(const FileEntry& fileEntry, char* dest) = 0;
 
         /**
-         * @brief ReadFile reads the file data to the given data container.
+         * @brief readFile reads the file data to the given data container.
          * @param fileEntry describing the file to read.
          * @param dest data container, to store the read data in.
          * @return true, if the file has been read successfully.
          */
-        virtual bool ReadFile(const FileEntry& fileEntry, std::vector<char>& dest) = 0;
+        virtual bool readFile(const FileEntry& fileEntry, std::vector<char>& dest) = 0;
 
         /**
-         * @brief WriteFile writes given data to the file storage with a direct data pointer.
+         * @brief writeFile writes given data to the file storage with a direct data pointer.
          * @param fileEntry describing the file to write.
          * @param src the data storage to be written.
          * @return true, if the file has been written successfully.
          */
-        //virtual bool WriteFile(const FileEntry& fileEntry, const char* src) = 0;
+        //virtual bool writeFile(const FileEntry& fileEntry, const char* src) = 0;
 
         /**
-         * @brief WriteFile writes given data to the file storage from a std::vector containing the data.
+         * @brief writeFile writes given data to the file storage from a std::vector containing the data.
          * @param fileEntry describing the file to write.
          * @param src the data storage to be written.
          * @return true, if the file has been written successfully.
          */
-        //virtual bool WriteFile(const FileEntry& fileEntry, const std::vector<char>& src) = 0;
+        //virtual bool writeFile(const FileEntry& fileEntry, const std::vector<char>& src) = 0;
 
         /**
-         * @brief GetBasePath returns the basePath of this instance.
+         * @brief getBasePath returns the basePath of this instance.
          *   This can be the directory path or the full path to the archive file, this implementation
          *   works with.
          * @return the basePath.
          */
-        const Path& GetBasePath() const;
+        const Path& getBasePath() const;
 
     protected:
         Path basePath; //!< Path to archive file or directory to work with.

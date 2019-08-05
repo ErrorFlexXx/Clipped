@@ -24,7 +24,7 @@ ConfigFile::ConfigFile(const Path& filepath, const String& delim = "=")
     , delim(delim)
 {}
 
-bool ConfigFile::ReadAll()
+bool ConfigFile::readAll()
 {
     if(!open(FileAccessMode::READ_ONLY))
         return false;
@@ -33,7 +33,7 @@ bool ConfigFile::ReadAll()
     keyPairs.clear();
 
     String line;
-    while(ReadLine(line, '\n'))
+    while(readLine(line, '\n'))
     {
         String key;
         String value;
@@ -56,7 +56,7 @@ bool ConfigFile::ReadAll()
     return true;
 }
 
-bool ConfigFile::WriteAll()
+bool ConfigFile::writeAll()
 {
     bool success = true;
 
@@ -69,9 +69,9 @@ bool ConfigFile::WriteAll()
         for(const auto& pair : entries)
         {
             if(!pair.first.empty())
-                success &= WriteLine(pair.first + delim + pair.second);
+                success &= writeLine(pair.first + delim + pair.second);
             else //Keep commentaries or something else empty lines or something.
-                success &= WriteLine(pair.first + pair.second);
+                success &= writeLine(pair.first + pair.second);
 
             if(!success)
                 break; //Stop writing to file - heres a problem.
@@ -82,12 +82,12 @@ bool ConfigFile::WriteAll()
     return success;
 }
 
-std::list<std::pair<String, String>>& ConfigFile::GetEntries()
+std::list<std::pair<String, String>>& ConfigFile::getEntries()
 {
     return entries;
 }
 
-bool ConfigFile::GetEntry(const String& key, int& target) const
+bool ConfigFile::getEntry(const String& key, int& target) const
 {
     auto it = keyPairs.find(key.toLower());
     if(it != keyPairs.end())
@@ -99,7 +99,7 @@ bool ConfigFile::GetEntry(const String& key, int& target) const
     return false;
 }
 
-bool ConfigFile::GetEntry(const String& key, unsigned short& target) const
+bool ConfigFile::getEntry(const String& key, unsigned short& target) const
 {
     auto it = keyPairs.find(key.toLower());
     if(it != keyPairs.end())
@@ -120,7 +120,7 @@ bool ConfigFile::GetEntry(const String& key, unsigned short& target) const
     return false;
 }
 
-bool ConfigFile::GetEntry(const String& key, uint32_t& target) const
+bool ConfigFile::getEntry(const String& key, uint32_t& target) const
 {
     auto it = keyPairs.find(key.toLower());
     if(it != keyPairs.end())
@@ -141,7 +141,7 @@ bool ConfigFile::GetEntry(const String& key, uint32_t& target) const
     return false;
 }
 
-bool ConfigFile::GetEntry(const String& key, String& target) const
+bool ConfigFile::getEntry(const String& key, String& target) const
 {
     auto it = keyPairs.find(key.toLower());
     if(it != keyPairs.end())
@@ -153,7 +153,7 @@ bool ConfigFile::GetEntry(const String& key, String& target) const
     return false;
 }
 
-bool ConfigFile::GetEntry(const String& key, bool& target) const
+bool ConfigFile::getEntry(const String& key, bool& target) const
 {
     auto it = keyPairs.find(key.toLower());
     if(it != keyPairs.end())

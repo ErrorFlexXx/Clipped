@@ -26,14 +26,14 @@ bool BinFile::open(const FileAccessMode& accessMode)
     return File::open(accessMode, FileDataMode::BINARY);
 }
 
-bool BinFile::ReadBytes(char*& buffer, size_t count)
+bool BinFile::readBytes(char*& buffer, size_t count)
 {
     if (buffer == nullptr) return false;
     file.read(buffer, count);
     return file.good();
 }
 
-bool BinFile::ReadBytes(std::vector<char>& buffer, size_t count)
+bool BinFile::readBytes(std::vector<char>& buffer, size_t count)
 {
     size_t vecPos = buffer.size();
     buffer.insert(buffer.end(), count, 0);
@@ -41,27 +41,27 @@ bool BinFile::ReadBytes(std::vector<char>& buffer, size_t count)
     return file.good();
 }
 
-bool BinFile::WriteBytes(const char*& buffer, size_t count)
+bool BinFile::writeBytes(const char*& buffer, size_t count)
 {
     if (buffer == nullptr) return false;
     file.write(buffer, count);
     return file.good();
 }
 
-bool BinFile::WriteBytes(const char*& buffer, size_t index, size_t count)
+bool BinFile::writeBytes(const char*& buffer, size_t index, size_t count)
 {
     const char* tmpBuffer = buffer;
     tmpBuffer += index;
-    return WriteBytes(tmpBuffer, count);
+    return writeBytes(tmpBuffer, count);
 }
 
-bool BinFile::WriteBytes(const std::vector<char>& buffer)
+bool BinFile::writeBytes(const std::vector<char>& buffer)
 {
     const char* charBuff = buffer.data();
-    return WriteBytes(charBuff, buffer.size());
+    return writeBytes(charBuff, buffer.size());
 }
 
-bool BinFile::ReadString(String& str, size_t count)
+bool BinFile::readString(String& str, size_t count)
 {
     char* buffer = new char[count + 1];
     if (buffer)
@@ -80,16 +80,16 @@ bool BinFile::ReadString(String& str, size_t count)
     return false;
 }
 
-bool BinFile::WriteString(const String& str)
+bool BinFile::writeString(const String& str)
 {
     file.write(str.c_str(),
                static_cast<long>(str.length()));  // Write string incl. 0 termination.
     return file.good();
 }
 
-bool BinFile::WriteStringTerminated(const String& str)
+bool BinFile::writeStringTerminated(const String& str)
 {
     char nullTermination = 0;
-    if (WriteString(str)) return Write<char>(nullTermination);
+    if (writeString(str)) return write<char>(nullTermination);
     return false;
 }

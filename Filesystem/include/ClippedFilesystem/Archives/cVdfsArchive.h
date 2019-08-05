@@ -94,23 +94,23 @@ namespace Clipped
         VDFSArchive(const Path& filepath);
 
         /**
-         * @brief Open checks if this Archiver can work with the given basePath.
+         * @brief open checks if this Archiver can work with the given basePath.
          * @return true, if the initialization has been successfull.
          */
-        virtual bool Open() override;
+        virtual bool open() override;
 
         /**
-         * @brief GetFile returns a FileEntry with informations about the stored file.
+         * @brief getFile returns a FileEntry with informations about the stored file.
          * @param filename file to lookup.
          * @return a FileEntry as unique ptr (necessary - polymorphic object (VDFSFileEntry)).
          */
-        virtual std::unique_ptr<FileEntry> GetFile(const Path& filepath) override;
+        virtual std::unique_ptr<FileEntry> getFile(const Path& filepath) override;
 
-        /** \copydoc cIArchiver::ReadFile(const FileEntry&,char*) */
-        virtual bool ReadFile(const FileEntry& fileEntry, char* dest) override;
+        /** \copydoc cIArchiver::readFile(const FileEntry&,char*) */
+        virtual bool readFile(const FileEntry& fileEntry, char* dest) override;
 
-        /** \copydoc cIArchiver::ReadFile(const FileEntry&,std::vector<char>&) */
-        virtual bool ReadFile(const FileEntry& fileEntry, std::vector<char>& dest) override;
+        /** \copydoc cIArchiver::readFile(const FileEntry&,std::vector<char>&) */
+        virtual bool readFile(const FileEntry& fileEntry, std::vector<char>& dest) override;
 
         /**
          * @brief getEntries returns entries with matching file extension
@@ -158,10 +158,16 @@ namespace Clipped
         bool writeHeader(const VDFSArchive::Header& header);
 
         /**
-         * @brief readVDFSIndex creates the file index for the vdfs file.
-         * @return true if index was successfully read.
+         * @brief readVDFSIndex reads the file index for the vdfs file.
+         * @return true, if index was successfully read.
          */
         bool readVDFSIndex();
+
+        /**
+         * @brief writeVDFSIndex writes the index for the vdfs file.
+         * @return true, if index was successfully written.
+         */
+        bool writeVDFSIndex();
 
         /**
          * @brief createIndex reads all entries to a directory tree.

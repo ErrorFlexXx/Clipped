@@ -11,7 +11,7 @@ int main(void)
     Logger() << Logger::MessageType::Info;
     VDFSArchive vdfsArchiver("extractTest.vdfs");
 
-    status &= vdfsArchiver.Open();
+    status &= vdfsArchiver.open();
     status &= checkFilesExist(vdfsArchiver);
 
     return !status; //success => true => Return code 0
@@ -36,9 +36,9 @@ int checkFilesExist(VDFSArchive& archive)
 
     for(Path& file : filesToCheck)
     {
-        auto entry = archive.GetFile(file.toUpper());
-        result &= entry->Exists();
-        if(!entry->Exists())
+        auto entry = archive.getFile(file.toUpper());
+        result &= entry->getExists();
+        if(!entry->getExists())
             LogError() << "File not found in test vdfs: " << file.toUpper();
     }
     return result;

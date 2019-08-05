@@ -2,6 +2,15 @@ cmake_minimum_required(VERSION 3.9)
 
 project(Clipped)
 
+set(CLIPPED_BUILD_STATIC OFF CACHE BOOL "Build shared libraries, if off, static libs otherwise.")
+set(CLIPPED_BUILD_MATHS OFF CACHE BOOL "Build ClippedMaths library.")
+set(CLIPPED_BUILD_FILESYSTEM OFF CACHE BOOL "Build ClippedFilesystem library.")
+set(CLIPPED_BUILD_ENVIRONMENT OFF CACHE BOOL "Build ClippedEnvironment library.")
+set(CLIPPED_BUILD_DATASTREAMS OFF CACHE BOOL "Build ClippedDatastreams library.")
+set(CLIPPED_BUILD_COMMUNICATION OFF CACHE BOOL "Build ClippedCommunication library.")
+set(CLIPPED_BUILD_ECS OFF CACHE BOOL "Build ClippedECS library.")
+set(CLIPPED_BUILD_TESTS OFF CACHE BOOL "Build tests.")
+
 # Note: Build type static if only allowed for OSS projects!
 if(CLIPPED_BUILD_STATIC)
     message("Clipped will be built for static lib usage.")
