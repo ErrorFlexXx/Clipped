@@ -13,6 +13,10 @@ build:
   publish_wap: true
   verbosity: minimal
 
+configuration:
+  - Debug
+  - Release
+
 for:
 -
   matrix:
@@ -22,4 +26,4 @@ for:
   - make
 
 test_script:
-  - ctest
+  - ctest -C Release
