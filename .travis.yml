@@ -17,10 +17,10 @@ matrix:
             - g++-7
             - gcc-7
       env:
-        - CONFIG="CONFIG=Debug" MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - CONFIG=Debug
       before_install:
         - eval "${MATRIX_EVAL}"
-        - eval "${CONFIG}"
     # g++-7 Release build Linux
     - os: linux
       addons:
@@ -31,22 +31,18 @@ matrix:
             - g++-7
             - gcc-7
       env:
-        - CONFIG="CONFIG=Release" MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - CONFIG=Release
       before_install:
         - eval "${MATRIX_EVAL}"
-        - eval "${CONFIG}"
     # Visual Studio Debug build Windows
     - os: windows
       env:
-        - CONFIG="CONFIG=Debug"
-      before_install:
-        - eval "${CONFIG}"
+        - CONFIG=Debug
     # Visual Studio Release build Windows
     - os: windows
       env:
-        - CONFIG="CONFIG=Release"
-      before_install:
-        - eval "${CONFIG}"
+        - CONFIG=Release
 
 script:
   - mkdir build
