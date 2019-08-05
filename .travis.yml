@@ -1,8 +1,5 @@
 language: cpp
 
-os: 
-  - linux
-
 compiler:
   - gcc
 
@@ -20,9 +17,9 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-7
+            - gcc-7
       env:
-        - CONFIG=DEBUG MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-
+        - CONFIG="DEBUG" MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
     - os: linux
       addons:
         apt:
@@ -30,15 +27,23 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-7
+            - gcc-7
       env:
-        - CONFIG=RELEASE MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - CONFIG="RELEASE" MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    - os: windows
+      env:
+        - CONFIG="DEBUG"
+    - os: windows
+      env:
+        - CONFIG="RELEASE"
 
 before_install:
     - eval "${MATRIX_EVAL}"
+    - eval "${CONFIG}"
 
 script:
-  - mkdir -p build
+  - mkdir build
   - cd build
   - cmake -DCMAKE_BUILD_TYPE=${CONFIG} -DCLIPPED_BUILD_COMMUNICATION=ON -DCLIPPED_BUILD_DATASTREAMS=ON -DCLIPPED_BUILD_ECS=ON -DCLIPPED_BUILD_ENVIRONMENT=ON -DCLIPPED_BUILD_FILESYSTEM=ON -DCLIPPED_BUILD_MATHS=ON -DCLIPPED_BUILD_TESTS=ON ..
-  - make
-  - ctest
+  - cmake --build .
+  - ctest -C ${CONFIG}
