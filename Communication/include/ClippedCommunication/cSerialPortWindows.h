@@ -32,7 +32,7 @@ namespace Clipped
     class SerialPort : public ISerialPort
     {
     public:
-        SerialPort(const String& interface, const Settings& settings);
+        SerialPort(const String& interfaceName, const Settings& settings);
 
         virtual ~SerialPort();
 

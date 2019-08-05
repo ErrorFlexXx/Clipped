@@ -137,3 +137,12 @@ MemorySize System::getCurrentProcessSystemMemory()
 #endif
 
 int System::getTotalCpus() { return std::thread::hardware_concurrency(); }
+
+void System::sleep(size_t millis)
+{
+#ifdef LINUX
+	std::usleep(millis * 1000);
+#elif defined(WINDOWS)
+	::Sleep(millis);
+#endif
+}

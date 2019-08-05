@@ -77,6 +77,12 @@ namespace Clipped
          * @return number of cpu cores.
          */
         static int getTotalCpus();
+
+		/**
+		 * @brief sleep let's the thread sleep for a given amount of time.
+		 * @param millis milliseconds to sleep.
+		 */
+		static void sleep(size_t millis);
     };
 
 }  // namespace Clipped

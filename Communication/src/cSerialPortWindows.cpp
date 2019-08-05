@@ -32,14 +32,14 @@ String getLastErrorAsString()
 
     LPSTR messageBuffer = nullptr;
     size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                                 NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+                                 NULL, errorMessageId, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
     String message(messageBuffer, size);
     LocalFree(messageBuffer);
     return message;
 }
 
-SerialPort::SerialPort(const String& interface, const Settings& settings)
-    : ISerialPort(interface, settings)
+SerialPort::SerialPort(const String& interfaceName, const Settings& settings)
+    : ISerialPort(interfaceName, settings)
 {
     isOpen = false;
 }
@@ -61,7 +61,7 @@ bool SerialPort::open(const IODevice::OpenMode& mode)
         case IODevice::OpenMode::ReadWrite: flags |= GENERIC_READ | GENERIC_WRITE; break;
     }
 
-    handle = CreateFile(interface.c_str(),
+    handle = CreateFile(interfaceName.c_str(),
                         flags,
                         0,
                         0,
@@ -70,7 +70,7 @@ bool SerialPort::open(const IODevice::OpenMode& mode)
                         0);
     if(handle == INVALID_HANDLE_VALUE)
     {
-        LogError() << "Can't open port: " << interface << " because: " << getLastErrorAsString();
+        LogError() << "Can't open port: " << interfaceName << " because: " << getLastErrorAsString();
         return false;
     }
     isOpen = true;
@@ -83,11 +83,11 @@ bool SerialPort::config()
     DCB dcb;
 
     FillMemory(&dcb, sizeof(dcb), 0);
-    if (!GetCommState(hComm, &dcb)) //Get current DCB
+    if (!GetCommState(handle, &dcb)) //Get current DCB
         return false; // Error in GetCommState
 
     //Setup of Baudrate:
-    dcb.BaudRate = (DWORD) settings.baudrate;
+    dcb.BaudRate = (DWORD) settings.baud;
     dcb.ByteSize = settings.dataBits;
 
     switch(settings.parity)
@@ -162,7 +162,7 @@ bool SerialPort::write(const std::vector<char>& data)
     LogDebug() << "Serial write: " << String(data).replace("\n", "");
     DWORD bytesWritten;
 
-    return WriteFile(handle, data.data(), data.length(), &bytesWritten, NULL);
+    return WriteFile(handle, data.data(), data.size(), &bytesWritten, NULL);
 }
 
 bool SerialPort::readAll(std::vector<char>& data)
