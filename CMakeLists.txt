@@ -11,6 +11,9 @@ set(CLIPPED_BUILD_COMMUNICATION OFF CACHE BOOL "Build ClippedCommunication libra
 set(CLIPPED_BUILD_ECS OFF CACHE BOOL "Build ClippedECS library.")
 set(CLIPPED_BUILD_TESTS OFF CACHE BOOL "Build tests.")
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Note: Build type static if only allowed for OSS projects!
 if(CLIPPED_BUILD_STATIC)
     message("Clipped will be built for static lib usage.")
