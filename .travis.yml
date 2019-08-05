@@ -6,10 +6,39 @@ compiler:
   - gcc
   - clang
 
+branches:
+  only:
+  - master
+
+matrix:
+  fast_finish: true
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - CONFIG=DEBUG MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - CONFIG=RELEASE MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
+before_install:
+    - eval "${MATRIX_EVAL}"
+
 script:
   - mkdir -p build
   - cd build
-  - cmake -DCLIPPED_BUILD_COMMUNICATION=ON -DCLIPPED_BUILD_DATASTREAMS=ON -DCLIPPED_BUILD_ECS=ON -DCLIPPED_BUILD_ENVIRONMENT=ON -DCLIPPED_BUILD_FILESYSTEM=ON -DCLIPPED_BUILD_MATHS=ON -DCLIPPED_BUILD_TESTS=ON ..
+  - cmake -DCMAKE_BUILD_TYPE=${CONFIG} -DCLIPPED_BUILD_COMMUNICATION=ON -DCLIPPED_BUILD_DATASTREAMS=ON -DCLIPPED_BUILD_ECS=ON -DCLIPPED_BUILD_ENVIRONMENT=ON -DCLIPPED_BUILD_FILESYSTEM=ON -DCLIPPED_BUILD_MATHS=ON -DCLIPPED_BUILD_TESTS=ON ..
   - make
   - ctest
-
