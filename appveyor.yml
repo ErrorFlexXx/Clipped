@@ -26,4 +26,4 @@ for:
   - make
 
 test_script:
-  - ctest -C Release
+  - ctest --output-on-failure -C %CONFIGURATION%
