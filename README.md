@@ -1,4 +1,12 @@
-# Clipped  [![Build status](https://ci.appveyor.com/api/projects/status/wfmymx0rithwj85l/branch/master?svg=true)](https://ci.appveyor.com/project/ChristianLpke/clipped/branch/master) [![Build status](https://ci.appveyor.com/api/projects/status/wfmymx0rithwj85l?svg=true)](https://ci.appveyor.com/project/ChristianLpke/clipped) 
+# Clipped 
+
+##Build informations:
+
+Master: [![Build status](https://ci.appveyor.com/api/projects/status/wfmymx0rithwj85l/branch/master?svg=true)](https://ci.appveyor.com/project/ChristianLpke/clipped/branch/master)
+
+Current:[![Build status](https://ci.appveyor.com/api/projects/status/wfmymx0rithwj85l?svg=true)](https://ci.appveyor.com/project/ChristianLpke/clipped) 
+
+## About this program:
 
 The basic idea behind clipped is, that many applications need exactly the same support functions to get their work done.
 _Clipped_ is intended to be a multipurpose library, that delivers small libraries to support you by whatever application you write.
