@@ -9,14 +9,16 @@ set(${PROJECT_NAME}_PUBLIC_HEADER
     include/${PROJECT_NAME}/cIODevice.h
     include/${PROJECT_NAME}/cSerialPort.h
     include/${PROJECT_NAME}/cSerialPortLinux.h
+    include/${PROJECT_NAME}/cSerialPortWindows.h
     include/${PROJECT_NAME}/cSerialPortInterface.h
     include/${PROJECT_NAME}/cMultimeterHP34401A.h
     lib/readerwriterqueue/readerwriterqueue.h
 )
 
 set(${PROJECT_NAME}_SOURCES
-    src/cSerialPortLinux.cpp
     src/cMultimeterHP34401A.cpp
+    src/cSerialPortLinux.cpp
+    src/cSerialPortWindows.cpp
 )
 
 add_library(${PROJECT_NAME} ${CLIPPED_BUILD_TYPE}

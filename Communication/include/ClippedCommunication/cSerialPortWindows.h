@@ -20,14 +20,12 @@
 #include <ClippedUtils/cOsDetect.h>
 #include "cSerialPortInterface.h"
 
-#include <termios.h>
-#include <unistd.h>
-#include <fcntl.h>
-
-#include <errno.h>
+#include <windows.h>
 
 namespace Clipped
 {
+    String getWindowsLastErrorAsString();
+
     /**
      * @brief The SerialPort class is the implementation of a serial interface.
      */
@@ -116,6 +114,6 @@ namespace Clipped
         virtual bool close() override;
 
     private:
-        int handle; //!< Unix file handle to serial port.
+        HANDLE handle; //!< Windows file handle to serial port.
     };
 } //namespace Clipped

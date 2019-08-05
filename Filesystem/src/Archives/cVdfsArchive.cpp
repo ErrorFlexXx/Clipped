@@ -64,7 +64,7 @@ bool VDFSArchive::readVDFSIndex()
 
 bool VDFSArchive::writeVDFSIndex()
 {
-
+    return true;
 }
 
 size_t VDFSArchive::createIndexTree(Tree<String, VdfsEntry>& tree)

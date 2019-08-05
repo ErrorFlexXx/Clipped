@@ -94,6 +94,7 @@ bool SerialPort::config()
         case Baud57600: cfsetospeed (&tty, B57600); cfsetispeed (&tty, B57600); break;
         case Baud115200: cfsetospeed (&tty, B115200); cfsetispeed (&tty, B115200); break;
         case Baud230400: cfsetospeed (&tty, B230400); cfsetispeed (&tty, B230400); break;
+        default: LogError() << "Selected baud rate not supported!"; return false; break;
     }
 
     //Setup of DataBits:
