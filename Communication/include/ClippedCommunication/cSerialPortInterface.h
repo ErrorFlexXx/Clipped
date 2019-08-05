@@ -32,27 +32,24 @@ namespace Clipped
          */
         enum Baudrate
         {
-            Baud50 = 50,
-            Baud75 = 75,
-            Baud110 = 110,
-            Baud134 = 134,
-            Baud150 = 150,
-            Baud200 = 200,
-            Baud300 = 300,
-            Baud600 = 600,
-            Baud1200 = 1200,
-            Baud1800 = 1800,
-            Baud2400 = 2400,
-            Baud4800 = 4800,
-            Baud9600 = 9600,
-            Baud14400 = 14400,
-            Baud19200 = 19200,
-            Baud38400 = 38400,
-            Baud57600 = 57600,
-            Baud115200 = 115200,
-            Baud128000 = 128000,
-            Baud230400 = 230400,
-            Baud256000 = 256000
+            Baud50,
+            Baud75,
+            Baud110,
+            Baud134,
+            Baud150,
+            Baud200,
+            Baud300,
+            Baud600,
+            Baud1200,
+            Baud1800,
+            Baud2400,
+            Baud4800,
+            Baud9600,
+            Baud19200,
+            Baud38400,
+            Baud57600,
+            Baud115200,
+            Baud230400
         };
 
         /**
@@ -60,10 +57,10 @@ namespace Clipped
          */
         enum DataBits
         {
-            DataBits5 = 5,
-            DataBits6 = 6,
-            DataBits7 = 7,
-            DataBits8 = 8
+            DataBits5,
+            DataBits6,
+            DataBits7,
+            DataBits8
         };
 
         /**
@@ -71,7 +68,7 @@ namespace Clipped
          */
         enum StartBits
         {
-            StartBits1 = 1 //!< One startbit per byte.
+            StartBits1 //!< One startbit per byte.
         };
 
         /**
@@ -79,8 +76,8 @@ namespace Clipped
          */
         enum StopBits
         {
-            StopBits1 = 1, //!< One Stopbit per byte.
-            StopBits2 = 2  //!< Two Stopbits per byte.
+            StopBits1, //!< One Stopbit per byte.
+            StopBits2  //!< Two Stopbits per byte.
         };
 
         /**
@@ -98,7 +95,8 @@ namespace Clipped
          */
         enum FlowControl
         {
-            FlowControlNone
+            FlowControlNone,
+            FlowControlHardwareHandshake
         };
 
         /**
@@ -141,6 +139,6 @@ namespace Clipped
     protected:
         String interfaceName; //!< Name of the serial interface (e.g. /dev/ttyUSB0 on linux or COM0 on windows)
         Settings settings;//!< The serial port settings (baudrate, databits, parity, etc.)
-    };
+    }; //class ISerialPort
 
 } //namespace Clipped
