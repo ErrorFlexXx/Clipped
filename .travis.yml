@@ -7,6 +7,7 @@ branches:
 matrix:
   fast_finish: true
   include:
+    # g++-7 Debug build Linux
     - os: linux
       addons:
         apt:
@@ -16,10 +17,11 @@ matrix:
             - g++-7
             - gcc-7
       env:
-        - CONFIG="DEBUG" MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - CONFIG="CONFIG=DEBUG" MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       before_install:
         - eval "${MATRIX_EVAL}"
         - eval "${CONFIG}"
+    # g++-7 Release build Linux
     - os: linux
       addons:
         apt:
@@ -29,17 +31,22 @@ matrix:
             - g++-7
             - gcc-7
       env:
-        - CONFIG="RELEASE" MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - CONFIG="CONFIG=RELEASE" MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       before_install:
         - eval "${MATRIX_EVAL}"
         - eval "${CONFIG}"
+    # Visual Studio Debug build Windows
     - os: windows
       env:
-        - CONFIG="DEBUG"
+        - CONFIG="CONFIG=DEBUG"
+      before_install:
+        - eval "${CONFIG}"
+    # Visual Studio Release build Windows
     - os: windows
-      compiler: 
       env:
-        - CONFIG="RELEASE"
+        - CONFIG="CONFIG=RELEASE"
+      before_install:
+        - eval "${CONFIG}"
 
 script:
   - mkdir build
