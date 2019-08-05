@@ -8,5 +8,18 @@ install:
 before_build:
   - cmake -DCLIPPED_BUILD_COMMUNICATION=ON -DCLIPPED_BUILD_DATASTREAMS=ON -DCLIPPED_BUILD_ECS=ON -DCLIPPED_BUILD_ENVIRONMENT=ON -DCLIPPED_BUILD_FILESYSTEM=ON -DCLIPPED_BUILD_MATHS=ON -DCLIPPED_BUILD_TESTS=ON .
 
+build:
+  project: Clipped
+  publish_wap: true
+  verbosity: minimal
+
+for:
+-
+  matrix:
+    only:
+      - image: Ubuntu
+    build_script:
+      - make
+
 test_script:
   - ctest
