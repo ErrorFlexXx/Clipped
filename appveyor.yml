@@ -1,13 +1,26 @@
-image: Ubuntu
+image: 
+    - Ubuntu
+    - Visual Studio 2017
 
 install:
     - git submodule update --init --recursive
 
-before_build:
-    - mkdir -p build; cd build; cmake -DCLIPPED_BUILD_COMMUNICATION=ON -DCLIPPED_BUILD_DATASTREAMS=ON -DCLIPPED_BUILD_ECS=ON -DCLIPPED_BUILD_ENVIRONMENT=ON -DCLIPPED_BUILD_FILESYSTEM=ON -DCLIPPED_BUILD_MATHS=ON -DCLIPPED_BUILD_TESTS=ON ..
-
-build_script:
-    - make
-
+for:
+-
+  matrix:
+    only:
+      - image: Ubuntu
+    before_build:
+      - mkdir -p build; cd build; cmake -DCLIPPED_BUILD_COMMUNICATION=ON -DCLIPPED_BUILD_DATASTREAMS=ON -DCLIPPED_BUILD_ECS=ON -DCLIPPED_BUILD_ENVIRONMENT=ON -DCLIPPED_BUILD_FILESYSTEM=ON -DCLIPPED_BUILD_MATHS=ON -DCLIPPED_BUILD_TESTS=ON ..
+    build_script:
+      - make
+-
+  matrix:
+    only:
+      - image: Visual Studio 2017
+    before_build:
+      - cmake -G "Visual Studio 15 2017" -DCLIPPED_BUILD_COMMUNICATION=ON -DCLIPPED_BUILD_DATASTREAMS=ON -DCLIPPED_BUILD_ECS=ON -DCLIPPED_BUILD_ENVIRONMENT=ON -DCLIPPED_BUILD_FILESYSTEM=ON -DCLIPPED_BUILD_MATHS=ON -DCLIPPED_BUILD_TESTS=ON .
+    build_script:
+      - msbuild %APPVEYOR_PROJECT_NAME%.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 test_script:
     - ctest
