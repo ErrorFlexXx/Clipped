@@ -260,9 +260,9 @@ namespace Clipped
             // Workaround for VS - unresolved external symbols of codecvt.
             // They forgot std::locale::id for char16_t and char32_t, but not for int32_t
 #if (_MSC_VER >= 1900 /* VS 2015*/) && (_MSC_VER <= 1916 /* VS 2017 */)
-            std::wstring_convert<std::codecvt_utf8_utf16<int32_t>, int32_t> convert;
+            ::std::wstring_convert<::std::codecvt_utf8_utf16<int32_t>, int32_t> convert;
             auto p = reinterpret_cast<const int32_t*>(str.data());
-            return stol(convert.to_bytes(p, p + str.size()));
+            return ::std::stol(convert.to_bytes(p, p + str.size()));
 #else
             ::std::wstring_convert<::std::codecvt_utf8<char32_t>, char32_t> convert;
             return ::std::stol(convert.to_bytes(str.c_str()), pos, base);
