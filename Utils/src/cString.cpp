@@ -21,6 +21,10 @@
 #include <locale>   //Converting ...
 #include "cLogger.h"
 
+//Note ::std used because of g++ c++11 compiler bug. Template implementation has to be wrapped into
+// a namespace Clipped { block to get around this bug. Therefore std:: would lead to Clipped::std::,
+// which is wrong. Therefore all std namespace functions are prefixed with :: here.
+
 namespace Clipped
 {
     template <class T>
@@ -50,7 +54,7 @@ namespace Clipped
     }
 
     template <class T>
-    BasicString<T>::BasicString(const std::basic_string<T>& s) : ::std::basic_string<T>(s)
+    BasicString<T>::BasicString(const ::std::basic_string<T>& s) : ::std::basic_string<T>(s)
     {
     }
 
@@ -64,7 +68,7 @@ namespace Clipped
     BasicString<T>::BasicString(const float& value, int precision)
     {
         BasicStringStream<T> stream;
-        stream << std::fixed << std::setprecision(precision) << value;
+        stream << ::std::fixed << ::std::setprecision(precision) << value;
         *this = fromAsci(stream.str().c_str());
     }
 
@@ -72,7 +76,7 @@ namespace Clipped
     BasicString<T>::BasicString(const double& value, int precision)
     {
         BasicStringStream<T> stream;
-        stream << std::fixed << std::setprecision(precision) << value;
+        stream << ::std::fixed << ::std::setprecision(precision) << value;
         *this = fromAsci(stream.str().c_str());
     }
 
@@ -114,7 +118,7 @@ namespace Clipped
     BasicString<char> BasicString<wchar_t>::toString() const
     {
         setlocale(LC_CTYPE, "");
-        return std::string(this->begin(), this->end()).c_str();
+        return ::std::string(this->begin(), this->end()).c_str();
     }
 
     template <>
@@ -123,11 +127,11 @@ namespace Clipped
         // Workaround for VS - unresolved external symbols of codecvt.
         // They forgot std::locale::id for char16_t and char32_t, but not for int32_t
 #if (_MSC_VER >= 1900 /* VS 2015*/) && (_MSC_VER <= 1916 /* VS 2017 */)
-        std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
+        ::std::wstring_convert<::std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
         auto p = reinterpret_cast<const int16_t*>(this->data());
         return BasicString<char>(convert.to_bytes(p, p + this->size()));
 #else
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+        ::std::wstring_convert<::std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
         return BasicString<char>(convert.to_bytes(this->c_str()));
 #endif
     }
@@ -138,11 +142,11 @@ namespace Clipped
         // Workaround for VS - unresolved external symbols of codecvt.
         // They forgot std::locale::id for char16_t and char32_t, but not for int32_t
 #if (_MSC_VER >= 1900 /* VS 2015*/) && (_MSC_VER <= 1916 /* VS 2017 */)
-        std::wstring_convert<std::codecvt_utf8_utf16<int32_t>, int32_t> convert;
+        ::std::wstring_convert<::std::codecvt_utf8_utf16<int32_t>, int32_t> convert;
         auto p = reinterpret_cast<const int32_t*>(this->data());
         return BasicString<char>(convert.to_bytes(p, p + this->size()));
 #else
-        std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> convert;
+        ::std::wstring_convert<::std::codecvt_utf8<char32_t>, char32_t> convert;
         return BasicString<char>(convert.to_bytes(this->c_str()));
 #endif
     }
@@ -150,8 +154,8 @@ namespace Clipped
     template <>
     BasicString<wchar_t> BasicString<char>::toWString() const
     {
-        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-        return std::wstring(converter.from_bytes(this->c_str()));
+        ::std::wstring_convert<::std::codecvt_utf8_utf16<wchar_t>> converter;
+        return ::std::wstring(converter.from_bytes(this->c_str()));
     }
 
     template <>
@@ -176,9 +180,9 @@ namespace Clipped
     }
 
     template <class T>
-    std::vector<char> BasicString<T>::toVector() const
+    ::std::vector<char> BasicString<T>::toVector() const
     {
-        std::vector<char> out;
+        ::std::vector<char> out;
         for(const auto& character : *this)
         {
             for(size_t i = sizeof(T); i > 0; i--)
@@ -195,7 +199,7 @@ namespace Clipped
         BasicStringStream<T> stream;
         for(const T& c : *this)
         {
-            stream << std::hex << (unsigned int)c << " ";
+            stream << ::std::hex << (unsigned int)c << " ";
         }
         BasicString<T> returned = stream.str();
         if(!returned.empty())
@@ -215,60 +219,6 @@ namespace Clipped
         BasicString<char> conv = str;
         return conv.toWString();
     }
-
-    // Functions injected to std:
-    namespace std
-    {
-        /**
-     * @brief stoi string to int conversion function for BasicString Utf16.
-     */
-        int stoi(const BasicString<char16_t>& str, size_t*& pos, int& base)
-        {
-            return ::std::stoi(str.toString().c_str(), pos, base);
-        }
-
-        /**
-     * @brief stoi string to int conversion function for BasicString Utf32.
-     */
-        int stoi(const BasicString<char32_t>& str, size_t*& pos, int& base)
-        {
-            return ::std::stoi(str.toString().c_str(), pos, base);
-        }
-
-        /**
-     * @brief stol string to long conversion function for BasicString Utf16.
-     */
-        long stol(const BasicString<char16_t>& str, size_t*& pos, int& base)
-        {
-            // Workaround for VS - unresolved external symbols of codecvt.
-            // They forgot std::locale::id for char16_t and char32_t, but not for int32_t
-#if (_MSC_VER >= 1900 /* VS 2015*/) && (_MSC_VER <= 1916 /* VS 2017 */)
-            ::std::wstring_convert<::std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
-            auto p = reinterpret_cast<const int16_t*>(str.data());
-            return ::std::stol(convert.to_bytes(p, p + str.size()), pos, base);
-#else
-            ::std::wstring_convert<::std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-            return ::std::stol(convert.to_bytes(str.c_str()), pos, base);
-#endif
-        }
-
-        /**
-     * @brief stol string to long conversion function for BasicString Utf32.
-     */
-        long stol(const BasicString<char32_t>& str, size_t*& pos, int& base)
-        {
-            // Workaround for VS - unresolved external symbols of codecvt.
-            // They forgot std::locale::id for char16_t and char32_t, but not for int32_t
-#if (_MSC_VER >= 1900 /* VS 2015*/) && (_MSC_VER <= 1916 /* VS 2017 */)
-            ::std::wstring_convert<::std::codecvt_utf8_utf16<int32_t>, int32_t> convert;
-            auto p = reinterpret_cast<const int32_t*>(str.data());
-            return ::std::stol(convert.to_bytes(p, p + str.size()));
-#else
-            ::std::wstring_convert<::std::codecvt_utf8<char32_t>, char32_t> convert;
-            return ::std::stol(convert.to_bytes(str.c_str()), pos, base);
-#endif
-        }
-    }  // namespace std
 
     template <class T>
     int BasicString<T>::toInt(size_t* pos, int base) const
@@ -475,3 +425,57 @@ namespace Clipped
     template class BasicStringStream<char32_t>;
 #endif
 }  // namespace Clipped
+
+// Functions injected to std:
+namespace std
+{
+    /**
+     * @brief stoi string to int conversion function for BasicString Utf16.
+     */
+    int stoi(const Clipped::BasicString<char16_t>& str, size_t*& pos, int& base)
+    {
+        return ::std::stoi(str.toString().c_str(), pos, base);
+    }
+
+    /**
+     * @brief stoi string to int conversion function for BasicString Utf32.
+     */
+    int stoi(const Clipped::BasicString<char32_t>& str, size_t*& pos, int& base)
+    {
+        return ::std::stoi(str.toString().c_str(), pos, base);
+    }
+
+    /**
+     * @brief stol string to long conversion function for BasicString Utf16.
+     */
+    long stol(const Clipped::BasicString<char16_t>& str, size_t*& pos, int& base)
+    {
+        // Workaround for VS - unresolved external symbols of codecvt.
+        // They forgot std::locale::id for char16_t and char32_t, but not for int32_t
+#if (_MSC_VER >= 1900 /* VS 2015*/) && (_MSC_VER <= 1916 /* VS 2017 */)
+        ::std::wstring_convert<::std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
+        auto p = reinterpret_cast<const int16_t*>(str.data());
+        return ::std::stol(convert.to_bytes(p, p + str.size()), pos, base);
+#else
+        ::std::wstring_convert<::std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+        return ::std::stol(convert.to_bytes(str.c_str()), pos, base);
+#endif
+    }
+
+    /**
+     * @brief stol string to long conversion function for BasicString Utf32.
+     */
+    long stol(const Clipped::BasicString<char32_t>& str, size_t*& pos, int& base)
+    {
+        // Workaround for VS - unresolved external symbols of codecvt.
+        // They forgot std::locale::id for char16_t and char32_t, but not for int32_t
+#if (_MSC_VER >= 1900 /* VS 2015*/) && (_MSC_VER <= 1916 /* VS 2017 */)
+        ::std::wstring_convert<::std::codecvt_utf8_utf16<int32_t>, int32_t> convert;
+        auto p = reinterpret_cast<const int32_t*>(str.data());
+        return ::std::stol(convert.to_bytes(p, p + str.size()));
+#else
+        ::std::wstring_convert<::std::codecvt_utf8<char32_t>, char32_t> convert;
+        return ::std::stol(convert.to_bytes(str.c_str()), pos, base);
+#endif
+    }
+}  // namespace std
