@@ -31,12 +31,70 @@ namespace Clipped
      */
     class Tree
     {
+        class TreeIterator : public std::iterator<std::output_iterator_tag, T>
+        {
+        public:
+            explicit TreeIterator(Tree<I, T>& container, size_t index = 0)
+                : container(container)
+                , index(index)
+            {}
+
+            std::pair<const I, T>& operator*()
+            {
+                if(index < container.countLocalElements())
+                {
+                    auto iterator = container.elements.begin();
+                    for(size_t i = 0; i < index; i++) iterator++;
+                    return *iterator;
+                }
+                size_t childLookupIndex = index - container.countLocalElements();
+                for(auto& child : container.childs)
+                {
+                    if(childLookupIndex < child.second.countElements())
+                        return *(child.second.begin() + childLookupIndex);
+                    else
+                        childLookupIndex -= child.second.countElements();
+                }
+            }
+
+            TreeIterator& operator++()
+            {
+                index++;
+                return *this;
+            }
+
+            TreeIterator& operator+(const size_t rhs)
+            {
+                index += rhs;
+                return *this;
+            }
+
+            bool operator !=(const TreeIterator& rhs)const
+            {
+                return rhs.index != index;
+            }
+
+        private:
+            Tree<I, T>& container;
+            size_t index;
+        };
+
     public:
         /**
          * @brief Tree creates a Tree identified by ident.
          * @param ident
          */
         Tree() {}
+
+        TreeIterator begin()
+        {
+            return Tree<I, T>::TreeIterator(*this, 0);
+        }
+
+        TreeIterator end()
+        {
+            return Tree<I, T>::TreeIterator(*this, countElements());
+        }
 
         /**
          * @brief elementExist checks if an element specified by key exists in this tree layer.
@@ -134,7 +192,52 @@ namespace Clipped
             if (it != childs.end()) childs.erase(it);
         }
 
-    private:
+        /**
+         * @brief countSubtrees counts all subtrees in this tree.
+         * @return amount of child trees.
+         */
+        size_t countSubtrees() const
+        {
+            size_t count = childs.size();
+            for(const auto& child : childs)
+                count += child.second.countSubtrees();
+            return count;
+        }
+
+        /**
+         * @brief countElements counts all elements in this tree and subtrees.
+         * @return amount of elements stored in the tree.
+         */
+        size_t countElements() const
+        {
+            size_t count = elements.size();
+            for(const auto& child : childs)
+                count += child.second.countElements();
+            return count;
+        }
+
+        /**
+         * @brief countLocalElements counts the elements in this stage of the tree.
+         * @return the elements stored on this stage.
+         */
+        size_t countLocalElements() const
+        {
+            return elements.size();
+        }
+
+        /**
+         * @brief countChildsAndElements counts all elements and child tree entries.
+         * @return total amount of child tree entries and elements.
+         */
+        size_t countChildsAndElements() const
+        {
+            size_t count = elements.size();
+            count += childs.size();
+            for(const auto& child : childs)
+                count += child.second.countChildsAndElements();
+            return count;
+        }
+
         std::map<I, Tree<I, T>> childs;  //!< subtrees identified by key of type I.
         std::map<I, T> elements;         //!< Key, elements map.
     };

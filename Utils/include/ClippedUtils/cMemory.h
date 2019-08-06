@@ -36,6 +36,12 @@ namespace Clipped
 
         operator size_t() const { return static_cast<size_t>(bytes); }
 
+        MemorySize& operator+=(const size_t rhs)
+        {
+            bytes += rhs;
+            return *this;
+        }
+
         /**
          * @brief toString creates a String representation of this memory size type.
          *   Sizes are being casted for better human readability: Bytes, kB, MB, GB, TB.

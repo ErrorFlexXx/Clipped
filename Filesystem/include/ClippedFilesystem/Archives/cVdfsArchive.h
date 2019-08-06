@@ -59,6 +59,16 @@ namespace Clipped
             : FileEntry(path, size, exists, override)
         {}
 
+        static size_t getByteSize(const size_t vdfsNameSize)
+        {
+            size_t sum = vdfsNameSize;
+            sum += sizeof(vdfs_offset);
+            sum += sizeof(vdfs_size);
+            sum += sizeof(vdfs_type);
+            sum += sizeof(vdfs_attribute);
+            return sum;
+        }
+
         String vdfs_name;          //!< Name of this entry.
         uint32_t vdfs_offset;      //!< Offset specifying the position of the entry inside the file.
         uint32_t vdfs_size;        //!< Size of the payload data.
@@ -76,13 +86,39 @@ namespace Clipped
          */
         struct Header
         {
+            static size_t getByteSize(const size_t commentLength, const size_t signatureLength)
+            {
+                size_t sum = commentLength + signatureLength;
+                sum += sizeof(entryCount);
+                sum += sizeof(fileCount);
+                sum += sizeof(creationTime);
+                sum += sizeof(contentSize);
+                sum += sizeof(rootOffset);
+                sum += sizeof(entrySize);
+                return sum;
+            }
+
+            String toString() const
+            {
+                String out = "VDFS Header: ";
+                out += "\nComment:       " + comment;
+                out += "\nSignature:     " + signature.trim() + " (Hex: " + signature.toHexString(false) + ")";
+                out += "\nEntry Count:   " + String((int)entryCount);
+                out += "\nFile Count:    " + String((int)fileCount);
+                out += "\nCreation Time: " + Time(creationTime).toString();
+                out += "\nContent Size:  " + String((int)contentSize);
+                out += "\nRoot offset:   " + String((int)rootOffset);
+                out += "\nEntry Size:    " + String((int)entrySize);
+                return out;
+            }
+
             String comment;            //!< Comment describing the file.
             String signature;          //!< A signature, e.g. a version indicator.
             uint32_t entryCount;       //!< total count of entries inside this archive.
             uint32_t fileCount;        //!< count of files inside this archive.
             MSDOSTime32 creationTime;  //!< MSDOS 32 Bit time regarding the creation time.
             uint32_t contentSize;      //!< total size of this archive in Bytes.
-            uint32_t rootOffset;       //!< Offset to first entry in the archive.
+            uint32_t rootOffset;       //!< Offset is where the index starts.
             int32_t entrySize;         //!< Size of the entry section.
         };
 
@@ -131,9 +167,9 @@ namespace Clipped
          */
         struct VDFSIndex
         {
-            VDFSIndex() : size(0) {}
+            VDFSIndex() : currentStoredSize(0) {}
 
-            MemorySize size;                //!< Size of the index in bytes.
+            MemorySize currentStoredSize;   //!< Size of the index that is currently stored on the file in bytes.
             Tree<String, VdfsEntry> index;  //!< Root stage of hierachical entry list.
         } archiveIndex; //!< informations about the index and it's properties.
 
@@ -170,12 +206,40 @@ namespace Clipped
         bool writeVDFSIndex();
 
         /**
-         * @brief createIndex reads all entries to a directory tree.
+         * @brief readIndexTree reads all entries to a directory tree.
          *   Recursively called for subtrees.
          * @param tree to store objects in.
          * @return Counter of extracted elements in this stage.
          */
-        size_t createIndexTree(Tree<String, VdfsEntry>& tree);
+        size_t readIndexTree(Tree<String, VdfsEntry>& tree);
+
+        /**
+         * @brief writeIndexTree writes the local directory tree to the vdfs file.
+         * @param tree to write.
+         * @return entries written in this stage.
+         */
+        size_t writeIndexTree(Tree<String, VdfsEntry>& tree);
+
+        /**
+         * @brief allocIndexMemory assures, that the index has free space at the right position.
+         *   Moves data to the end, if required, to free memeory for the index.
+         * @return true, if the index has enaugh place now.
+         */
+        bool allocIndexMemory();
+
+        /**
+         * @brief getFirstStoredEntry gets the entry with the smallest offset from the index.
+         * @param entry pointer to vdfsEntry with smallest offset.
+         * @return true, if an entry has been found (is false if the index is empty).
+         */
+        bool getFirstStoredEntry(VdfsEntry*& entry);
+
+        /**
+         * @brief moveEntryDataToTheEnd moves the data of an entry to the file end and updates the offset in the index.
+         * @param entry to move.
+         * @return true, if moved successfully.
+         */
+        bool moveEntryDataToTheEnd(VdfsEntry*& entry);
 
     }; //class VDFSArchive
 

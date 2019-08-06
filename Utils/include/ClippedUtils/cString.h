@@ -130,9 +130,11 @@ namespace Clipped
 
         /**
          * @brief toHexString creates a hexadecimal representation of the string.
+         * @param uppercase if true, Hex letters are displayed uppercase.
+         * @param delimiter to be put between the 8bit numbers.
          * @return the hex representation as string.
          */
-        BasicString<T> toHexString() const;
+        BasicString<T> toHexString(bool uppercase, const BasicString<T> delimiter = " ") const;
 
         /**
          * @brief fromAsci sets this string from an ascii input.

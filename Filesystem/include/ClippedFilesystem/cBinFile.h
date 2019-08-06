@@ -87,7 +87,7 @@ namespace Clipped
          * @param count amount of bytes to be written.
          * @return true, if written successfully, false otherwise.
          */
-        bool writeBytes(const char*& buffer, size_t count);
+        bool writeBytes(const char* buffer, size_t count);
 
         /**
          * @brief writeBytes write count bytes from buffer + offset to file.
@@ -96,7 +96,7 @@ namespace Clipped
          * @param count amount of bytes to be written.
          * @return true, if successfully written, false otherwise.
          */
-        bool writeBytes(const char*& buffer, size_t index, size_t count);
+        bool writeBytes(const char* buffer, size_t index, size_t count);
 
         /**
          * @brief writeBytes writes a whole vector to file.

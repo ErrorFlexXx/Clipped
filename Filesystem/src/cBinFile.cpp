@@ -41,14 +41,14 @@ bool BinFile::readBytes(std::vector<char>& buffer, size_t count)
     return file.good();
 }
 
-bool BinFile::writeBytes(const char*& buffer, size_t count)
+bool BinFile::writeBytes(const char* buffer, size_t count)
 {
     if (buffer == nullptr) return false;
     file.write(buffer, count);
     return file.good();
 }
 
-bool BinFile::writeBytes(const char*& buffer, size_t index, size_t count)
+bool BinFile::writeBytes(const char* buffer, size_t index, size_t count)
 {
     const char* tmpBuffer = buffer;
     tmpBuffer += index;

@@ -111,6 +111,12 @@ namespace Clipped
         bool setPosition(long pos);
 
         /**
+         * @brief getPosition gets the current cursor position in file.
+         * @return the absolute cursor position.
+         */
+        long getPosition();
+
+        /**
          * @brief seek moves the cursor relative to the current cursors position.
          * @param count
          * @return true, if the cursor moved successfully, false otherwise.

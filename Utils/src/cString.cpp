@@ -194,16 +194,19 @@ namespace Clipped
     }
 
     template <class T>
-    BasicString<T> BasicString<T>::toHexString() const
+    BasicString<T> BasicString<T>::toHexString(bool uppercase, const BasicString<T> delimiter) const
     {
         BasicStringStream<T> stream;
+        if(uppercase)
+            stream << std::uppercase;
+
         for(const T& c : *this)
         {
-            stream << ::std::hex << (unsigned int)c << " ";
+            stream << ::std::hex << ::std::setfill('0') << ::std::setw(2) << (unsigned int)c << delimiter;
         }
         BasicString<T> returned = stream.str();
         if(!returned.empty())
-            returned = returned.substr(0, returned.length() - 1);
+            returned = returned.substr(0, returned.length() - delimiter.length());
         return returned;
     }
 
@@ -357,6 +360,10 @@ namespace Clipped
         if (BasicString<T>::npos != endpos)
         {
             return this->substr(firstpos, endpos + 1 - firstpos);
+        }
+        else if(endpos == BasicString<T>::npos && firstpos == BasicString<T>::npos)
+        {
+            return "";
         }
         return *this;
     }

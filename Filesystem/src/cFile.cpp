@@ -126,8 +126,13 @@ bool File::isOpen() const { return file.is_open(); }
 
 bool File::setPosition(long pos)
 {
-    file.seekg(pos, ios::beg);
-    return ((file.failbit | file.badbit) == 0);
+    file.seekg(pos);
+    return file.good();
+}
+
+long File::getPosition()
+{
+    return file.tellg();
 }
 
 bool File::seek(long delta)

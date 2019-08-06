@@ -8,7 +8,7 @@ bool checkFilesExist(VDFSArchive& archive);
 int main(void)
 {
     bool status = true;
-    Logger() << Logger::MessageType::Info;
+    Logger() << Logger::MessageType::Debug;
     VDFSArchive vdfsArchiver("extractTest.vdfs");
 
     status &= vdfsArchiver.open();
