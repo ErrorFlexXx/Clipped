@@ -35,7 +35,7 @@ Time::Time(const zDATE &zDate)
     timeinfo.tm_hour = zDate.hour;
     timeinfo.tm_min = zDate.minute;
     timeinfo.tm_sec = zDate.second;
-    time = mktime(&timeinfo) - timezone;  // Make time_t as utc.
+    time = mktime(&timeinfo) - getUTCOffsetSeconds();  // Make time_t as utc.
 }
 
 Time::Time(const MSDOSTime32 &msdosTime)
@@ -54,7 +54,7 @@ Time::operator zDATE() const
 {
     zDATE zDate;
     tm timeinfo = {};
-    time_t localTime = time + timezone;  // ctime expects time_t to be localtime...
+    time_t localTime = time + getUTCOffsetSeconds();  // ctime expects time_t to be localtime...
     buildTimeInfo(&localTime, &timeinfo, false);
 
     zDate.year = static_cast<uint32_t>(timeinfo.tm_year + 1900);
@@ -70,7 +70,7 @@ Time::operator MSDOSTime32() const
 {
     MSDOSTime32 msdosTime;
     tm timeinfo = {};
-    time_t localTime = time + timezone;  // ctime expects time_t to be localtime...
+    time_t localTime = time + getUTCOffsetSeconds();  // ctime expects time_t to be localtime...
     buildTimeInfo(&localTime, &timeinfo, false);
 
     msdosTime.parts.year = static_cast<unsigned>(timeinfo.tm_year - 1980 + 1900);
@@ -96,6 +96,16 @@ String Time::toString(const String &format, bool utc) const
         LogWarn() << "strftime returned with an error. Conversion failed!";
     }
     return String("");
+}
+
+time_t Time::getUTCOffsetSeconds() const
+{
+    time_t t = ::time(nullptr);
+    struct tm lt = {0};
+
+    localtime_r(&t, &lt);
+
+    return -lt.tm_gmtoff;
 }
 
 void Time::buildTimeInfo(const time_t *time, tm *timeinfo, bool utc) const
