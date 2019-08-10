@@ -31,7 +31,7 @@ namespace Clipped
     public:
         FileEntry();
 
-        FileEntry(const Path& path, const MemorySize size, bool exists, bool override);
+        FileEntry(const Path& path, const MemorySize size);
 
         virtual ~FileEntry() {}
 
@@ -48,8 +48,6 @@ namespace Clipped
     private:
         Path path;      //!< The path of this entry - relative to the FileManager's basePath.
         MemorySize size;//!< The memory size of this entry in bytes.
-        bool exists;    //!< Flag stating, if the file exists.
-        bool override;  //!< Flag stating, if the file shall be overriden.
     }; //class FileEntry
 
     /**
@@ -85,13 +83,17 @@ namespace Clipped
         //Interface methods (Single file access):
         /**
          * @brief getFile looks up a file in the file storage.
-         *   Note: A caller will always get a FileEntry object returned, that has e.g. the existing flag set.
-         * @param outFile handle to get informations about the file and the data later via ReadFile.
          * @param filepath the filepath of the requested file.
-         * @param ignoreCase flag specifying, if the case shall be ignored, or not.
-         * @return true, if the outFile
+         * @return file handle or nullptr, if file doesn't exist.
          */
-        virtual std::unique_ptr<FileEntry> getFile(const Path& filepath) = 0;
+        virtual FileEntry* getFile(const Path& filepath) = 0;
+
+        /**
+         * @brief createFile creates a file handle to add content or overwrite a file in the file storage.
+         * @param filepath to the file.
+         * @return a file handle - either an existing or a new created.
+         */
+        virtual FileEntry* createFile(const Path& filepath) = 0;
 
         /**
          * @brief readFile reads the file data to the given dest pointer.
@@ -99,7 +101,7 @@ namespace Clipped
          * @param dest pointer to the memory to store the data at.
          * @return true, if the file has been read successfully.
          */
-        virtual bool readFile(const FileEntry& fileEntry, char* dest) = 0;
+        virtual bool readFile(const FileEntry* fileEntry, char* dest) = 0;
 
         /**
          * @brief readFile reads the file data to the given data container.
@@ -107,15 +109,16 @@ namespace Clipped
          * @param dest data container, to store the read data in.
          * @return true, if the file has been read successfully.
          */
-        virtual bool readFile(const FileEntry& fileEntry, std::vector<char>& dest) = 0;
+        virtual bool readFile(const FileEntry* fileEntry, std::vector<char>& dest) = 0;
 
         /**
          * @brief writeFile writes given data to the file storage with a direct data pointer.
          * @param fileEntry describing the file to write.
          * @param src the data storage to be written.
+         * @param length the amount of bytes from src data to write.
          * @return true, if the file has been written successfully.
          */
-        //virtual bool writeFile(const FileEntry& fileEntry, const char* src) = 0;
+        virtual bool writeFile(FileEntry* fileEntry, const char* src, const size_t length) = 0;
 
         /**
          * @brief writeFile writes given data to the file storage from a std::vector containing the data.
@@ -123,7 +126,7 @@ namespace Clipped
          * @param src the data storage to be written.
          * @return true, if the file has been written successfully.
          */
-        //virtual bool writeFile(const FileEntry& fileEntry, const std::vector<char>& src) = 0;
+        virtual bool writeFile(FileEntry* fileEntry, const std::vector<char>& src) = 0;
 
         /**
          * @brief getBasePath returns the basePath of this instance.

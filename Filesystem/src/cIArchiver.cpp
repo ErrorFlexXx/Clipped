@@ -5,15 +5,11 @@ using namespace Clipped;
 FileEntry::FileEntry()
     : path("")
     , size(0)
-    , exists(false)
-    , override(false)
 {}
 
-FileEntry::FileEntry(const Path& path, const MemorySize size, bool exists, bool override)
+FileEntry::FileEntry(const Path& path, const MemorySize size)
     : path(path)
     , size(size)
-    , exists(exists)
-    , override(override)
 {}
 
 const Path& FileEntry::getPath() const
@@ -24,16 +20,6 @@ const Path& FileEntry::getPath() const
 const MemorySize FileEntry::getSize() const
 {
     return size;
-}
-
-bool FileEntry::getExists() const
-{
-    return exists;
-}
-
-bool FileEntry::getOverride() const
-{
-    return override;
 }
 
 IArchiver::IArchiver(const Path& basePath)

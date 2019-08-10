@@ -51,15 +51,15 @@ namespace Clipped
     {
     public:
         VdfsEntry()
-            : FileEntry("", 0, false, false)
+            : FileEntry("", 0)
         {}
 
         VdfsEntry(const FileEntry& entry)
             : FileEntry(entry)
         {}
 
-        VdfsEntry(const Path& path, const MemorySize size, bool exists, bool override)
-            : FileEntry(path, size, exists, override)
+        VdfsEntry(const Path& path, const MemorySize size)
+            : FileEntry(path, size)
         {}
 
         static size_t getByteSize(const size_t vdfsNameSize)
@@ -136,6 +136,8 @@ namespace Clipped
          */
         VDFSArchive(const Path& filepath);
 
+        virtual ~VDFSArchive();
+
         /**
          * @brief open checks if this Archiver can work with the given basePath.
          * @return true, if the initialization has been successfull.
@@ -149,17 +151,39 @@ namespace Clipped
         virtual bool finalize() override;
 
         /**
+         * @brief getVdfsFile gets a vdfs file entry handle.
+         * @param filepath the path inside the vdfs directory.
+         * @param createIfNotFound creates the structure and file entry, if it doesn't exists.
+         * @return a FileEntry handle.
+         */
+        FileEntry* getVdfsFile(const Path& filepath, bool createIfNotFound = false);
+
+        /**
          * @brief getFile returns a FileEntry with informations about the stored file.
          * @param filename file to lookup.
+         * @param create creates this entry in the index, if it doesn't exists.
          * @return a FileEntry as unique ptr (necessary - polymorphic object (VDFSFileEntry)).
          */
-        virtual std::unique_ptr<FileEntry> getFile(const Path& filepath) override;
+        virtual FileEntry* getFile(const Path& filepath) override;
+
+        /**
+         * @brief createFile gets a handle to a new or to be overriden file.
+         * @param filepath of the new file.
+         * @return a FileEntry handle.
+         */
+        virtual FileEntry* createFile(const Path& filepath) override;
 
         /** \copydoc cIArchiver::readFile(const FileEntry&,char*) */
-        virtual bool readFile(const FileEntry& fileEntry, char* dest) override;
+        virtual bool readFile(const FileEntry* fileEntry, char* dest) override;
 
         /** \copydoc cIArchiver::readFile(const FileEntry&,std::vector<char>&) */
-        virtual bool readFile(const FileEntry& fileEntry, std::vector<char>& dest) override;
+        virtual bool readFile(const FileEntry* fileEntry, std::vector<char>& dest) override;
+
+        /** \copydoc cIArchiver::writeFile(FileEntry&,const char*) */
+        virtual bool writeFile(FileEntry* fileEntry, const char* src, const size_t length) override;
+
+        /** \copydoc cIArchiver::writeFile(FileEntry&,const std::vector<char>&) */
+        virtual bool writeFile(FileEntry* fileEntry, const std::vector<char>& src) override;
 
         /**
          * @brief getEntries returns entries with matching file extension
@@ -256,6 +280,20 @@ namespace Clipped
          */
         bool moveEntryDataToTheEnd(VdfsEntry*& entry);
 
+        /**
+         * @brief checkFileEntryIsVdfsEntry
+         * @param check pointer to FileEntry object to check.
+         * @param target pointer reference to write the casted VdfsEntry pointer at.
+         * @return true, if the FileEntry is an VdfsEntry..
+         */
+        bool checkFileEntryIsVdfsEntry(FileEntry* check, VdfsEntry*& target) const;
+
+        /**
+         * @brief getFreeMemoryOffset returns a file position offset with enaugh place to store the content.
+         * @param requiredBytes amount of bytes to store.
+         * @return an offset to write the content to.
+         */
+        size_t getFreeMemoryOffset(const size_t requiredBytes) const;
     }; //class VDFSArchive
 
 }  // namespace Clipped

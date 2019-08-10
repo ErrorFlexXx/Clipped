@@ -120,6 +120,8 @@ namespace Clipped
          */
         const T& getElement(const I& key) { return elements[key]; }
 
+        T& getElementRef(const I& key) { return elements[key]; }
+
         /**
          * @brief getElements gets a complete map of all elements of this tree layer.
          * @return const reference of elements.

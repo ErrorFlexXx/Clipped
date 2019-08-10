@@ -4,6 +4,8 @@
 using namespace Clipped;
 
 bool checkFilesExist(VDFSArchive& archive);
+bool checkFilesDoesntExist(VDFSArchive& archive);
+bool addAFile(VDFSArchive& archive);
 
 int main(void)
 {
@@ -16,7 +18,15 @@ int main(void)
     status &= vdfsArchiver.open();
     LogInfo() << "Check file contents.";
     status &= checkFilesExist(vdfsArchiver);
+    LogInfo() << "Check unstored file contents.";
+    status &= checkFilesDoesntExist(vdfsArchiver);
+    LogInfo() << "Check addAFile.";
+    status &= addAFile(vdfsArchiver);
 
+    if(status)
+        LogInfo() << "All tests passed!";
+    else
+        LogError() << "At least one test failed!";
     return !status; //success => true => Return code 0
 }
 
@@ -39,10 +49,55 @@ bool checkFilesExist(VDFSArchive& archive)
 
     for(Path& file : filesToCheck)
     {
-        auto entry = archive.getFile(file.toUpper());
-        result &= entry->getExists();
-        if(!entry->getExists())
+        FileEntry* entry = archive.getFile(file.toUpper());
+        if(nullptr == entry)
+        {
             LogError() << "File not found in test vdfs: " << file.toUpper();
+            result = false;
+        }
     }
+
     return result;
+}
+
+bool checkFilesDoesntExist(VDFSArchive& archive)
+{
+    bool result = true;
+
+    Path filesDoesntExist[] = {"NotFound.txt",
+                              "DoesntExist.log",
+                              "Even/In/Subdirectories/Not.txt"};
+
+    for(Path& file : filesDoesntExist)
+    {
+        FileEntry* entry = archive.getFile(file.toUpper());
+        if(nullptr != entry)
+        {
+            LogError() << "File found in vdfs, that shouldn't exist: " << file.toUpper();
+            result = false;
+        }
+    }
+
+    return result;
+}
+
+bool addAFile(VDFSArchive& archive)
+{
+    bool success = true;
+    File orig(archive.getBasePath());
+    if(!orig.copy("addFileTest.vdfs")) success = false;
+    if(success)
+    {
+        VDFSArchive addAFileArchive("addFileTest.vdfs");
+        if(!addAFileArchive.open())
+        {
+            LogError() << "Can't open file!";
+            return false;
+        }
+        auto newFile = addAFileArchive.createFile("NewFile.txt");
+        String data = "This is the text!\r\n";
+        addAFileArchive.writeFile(newFile, data.data(), data.size());
+    }
+
+    return success;
 }

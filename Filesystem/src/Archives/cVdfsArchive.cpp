@@ -29,7 +29,13 @@ VDFSArchive::VDFSArchive(const Path& filepath)
     : IArchiver(filepath)
     , file(basePath)
     , directoryOffsetCount(0)
+    , modified(false)
 {
+}
+
+VDFSArchive::~VDFSArchive()
+{
+    finalize();
 }
 
 bool VDFSArchive::open()
@@ -52,17 +58,32 @@ bool VDFSArchive::open()
         LogError() << "VDFS Index corrupt!";
         return result;
     }
-
     return result;
 }
 
 bool VDFSArchive::finalize()
 {
-    bool success = writeHeader(header);
-    if(!success) LogError() << "Can't write the VDFS header!";
-    if(success) success = writeVDFSIndex();
-    if(!success) LogError() << "Can't write the VDFS index!";
-
+    bool success = true;
+    if(file.isOpen())
+    {
+        if(modified)
+        {
+            success = writeHeader(header);
+            if(!success) LogError() << "Can't write the VDFS header!";
+            if(success) success = writeVDFSIndex();
+            if(!success)
+                LogError() << "Can't write the VDFS index!";
+            else
+                modified = false; //Index updated. No modifications left.
+        }
+        file.close();
+    }
+    else if(modified)
+    {
+        //Should never happen.
+        LogError() << "Can't update vdfs index -- File handle is closed to early.";
+        success = false;
+    }
     return success;
 }
 
@@ -165,8 +186,7 @@ size_t VDFSArchive::readIndexTree(Tree<String, VdfsEntry>& tree)
         if(interpretResult) //If all entry data has been successfully read from file
         {
             archiveIndex.currentStoredSize += file.getPosition() - beforeEntryRead;
-            //Remove whitespace and CR as it would disturb a lookup on linunx.
-            entry.vdfs_name = entry.vdfs_name.trim();
+            entry.vdfs_name = entry.vdfs_name.trim(); //Remove whitespaces (Fill char in the archive)
 
             //Regarding the VDFS file format:
             //First all directories get listed. Files afterwards.
@@ -187,7 +207,6 @@ size_t VDFSArchive::readIndexTree(Tree<String, VdfsEntry>& tree)
                 LogDebug() << "Attribute: " << entry.vdfs_attribute;
                 entry.path = entry.vdfs_name;
                 entry.size = entry.vdfs_size;
-                entry.exists = true;
                 tree.addElement(entry.path, entry);
             }
 
@@ -253,38 +272,50 @@ bool VDFSArchive::writeIndexTree(Tree<String, VdfsEntry>& tree)
     return writeSuccess;
 }
 
-std::unique_ptr<FileEntry> VDFSArchive::getFile(const Path& filepath)
+FileEntry* VDFSArchive::getVdfsFile(const Path& filepath, bool createIfNotFound)
 {
     Path dir = filepath.getDirectory();
     Path file = filepath.getFilenameWithExt();
 
-    bool found = false;
     auto* searchIndex = &archiveIndex.index;
 
     for (String stage : dir.split(Path("/")))
     {
-        if (searchIndex->subtreeExist(stage))
+        bool subtreeExists = searchIndex->subtreeExist(stage);
+        if ( createIfNotFound || subtreeExists)
         {
+            if(!subtreeExists)
+                header.entryCount++;
             searchIndex = &searchIndex->getSubtree(stage);
         }
         else
         {
-            found = false;
-            return std::unique_ptr<VdfsEntry>(new VdfsEntry(filepath, 0, 0, 0));
+            return nullptr;
         }
     }
-    if (searchIndex->elementExist(file))
+    bool fileExists = searchIndex->elementExist(file);
+    if (createIfNotFound || searchIndex->elementExist(file))
     {
-        found = true;
-        return std::unique_ptr<VdfsEntry>( new VdfsEntry(searchIndex->getElement(file)));
+        if(!fileExists)
+            header.entryCount++;
+        return &searchIndex->getElementRef(file);
     }
-    found = false;
-    return std::unique_ptr<VdfsEntry>(new VdfsEntry(filepath, 0, 0, 0));
+    return nullptr;
 }
 
-bool VDFSArchive::readFile(const FileEntry& fileEntry, char* dest)
+FileEntry* VDFSArchive::getFile(const Path& filepath)
 {
-    const VdfsEntry* vdfsEntry = dynamic_cast<const VdfsEntry*>(&fileEntry);
+    return getVdfsFile(filepath, false);
+}
+
+FileEntry* VDFSArchive::createFile(const Path& filepath)
+{
+    return getVdfsFile(filepath, true);
+}
+
+bool VDFSArchive::readFile(const FileEntry* fileEntry, char* dest)
+{
+    const VdfsEntry* vdfsEntry = dynamic_cast<const VdfsEntry*>(fileEntry);
     if(!vdfsEntry)
     {
         LogError() << "fileEntry given that wasn't constructed by a vdfsArchive instance!";
@@ -301,9 +332,9 @@ bool VDFSArchive::readFile(const FileEntry& fileEntry, char* dest)
     return true; //Successfully read the file data.
 }
 
-bool VDFSArchive::readFile(const FileEntry& fileEntry, std::vector<char>& dest)
+bool VDFSArchive::readFile(const FileEntry* fileEntry, std::vector<char>& dest)
 {
-    const VdfsEntry* vdfsEntry = dynamic_cast<const VdfsEntry*>(&fileEntry);
+    const VdfsEntry* vdfsEntry = dynamic_cast<const VdfsEntry*>(fileEntry);
     if(!vdfsEntry)
     {
         LogError() << "fileEntry given that wasn't constructed by a vdfsArchive instance!";
@@ -318,6 +349,31 @@ bool VDFSArchive::readFile(const FileEntry& fileEntry, std::vector<char>& dest)
         return false;
     }
     return true; //Successfully read the file data.
+}
+
+bool VDFSArchive::writeFile(FileEntry* fileEntry, const char* src, const size_t length)
+{
+    VdfsEntry* vdfsEntry;
+    if(!checkFileEntryIsVdfsEntry(fileEntry, vdfsEntry))
+    {
+        LogError() << "Handle given, that wasn't created by an VDFSArchive instance!";
+        return false;
+    }
+    vdfsEntry->vdfs_size = length; //Enter size.
+    size_t writeOffset = getFreeMemoryOffset(length);
+    if(!file.setPosition(writeOffset)) return false;
+    if(!file.writeBytes(src, length)) return false;
+    vdfsEntry->vdfs_offset = writeOffset;
+    vdfsEntry->vdfs_attribute = Attribute::ARCHIVE;
+    header.contentSize += length;
+
+    modified = true; //Update index on disk, if archive gets closed.
+    return true;
+}
+
+bool VDFSArchive::writeFile(FileEntry* fileEntry, const std::vector<char>& src)
+{
+    return writeFile(fileEntry, src.data(), src.size());
 }
 
 bool VDFSArchive::readHeader(VDFSArchive::Header& header)
@@ -370,10 +426,27 @@ bool VDFSArchive::writeHeader(const VDFSArchive::Header& header)
 
     if (result) result = file.write(header.entryCount);
     if (result) result = file.write(header.fileCount);
-    if (result) result = file.write(header.creationTime);
+    if (result) result = file.write((MSDOSTime32)Time());
     if (result) result = file.write(header.contentSize);
     if (result) result = file.write(header.rootOffset);
     if (result) result = file.write(header.entrySize);
 
     return result;
+}
+
+bool VDFSArchive::checkFileEntryIsVdfsEntry(FileEntry* check, VdfsEntry*& target) const
+{
+    bool success = true;
+    target = dynamic_cast<VdfsEntry*>(check);
+    if(!target)
+    {
+        LogError() << "fileEntry given that wasn't constructed by a vdfsArchive instance!";
+        success = false;
+    }
+    return success;
+}
+
+size_t VDFSArchive::getFreeMemoryOffset(const size_t requiredBytes) const
+{
+    return file.getSize(); //To do: Implement Gap Management to minimize file fragmentation.
 }
