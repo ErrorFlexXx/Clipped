@@ -55,6 +55,10 @@ namespace Clipped
                     else
                         childLookupIndex -= child.second.countElements();
                 }
+				//Should never happen.
+				LogError() << "Iterator end() overrun detected!";
+				auto iterator = container.elements.begin(); //Fallback return first element.
+				return *iterator;
             }
 
             TreeIterator& operator++()
