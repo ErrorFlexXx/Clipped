@@ -205,6 +205,16 @@ namespace Clipped
         }
 
         /**
+         * @brief countSubtrees counts all subtrees in this tree stage.
+         * @return amount of child trees in this stage.
+         */
+        size_t countLocalSubtrees() const
+        {
+            size_t count = childs.size();
+            return count;
+        }
+
+        /**
          * @brief countElements counts all elements in this tree and subtrees.
          * @return amount of elements stored in the tree.
          */
