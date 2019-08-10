@@ -16,6 +16,10 @@
 
 #include "cTime.h"
 #include "cLogger.h"
+#include <ClippedUtils/cOsDetect.h>
+#ifdef WINDOWS
+#include <iomanip>
+#endif
 
 using namespace Clipped;
 
@@ -100,12 +104,21 @@ String Time::toString(const String &format, bool utc) const
 
 time_t Time::getUTCOffsetSeconds() const
 {
+#ifdef LINUX
     time_t t = ::time(nullptr);
     struct tm lt = {0};
-
     localtime_r(&t, &lt);
-
     return -lt.tm_gmtoff;
+#else
+    time_t t = std::time(nullptr);
+    auto const tm = std::localtime(&t);
+    StringStream os;
+    os << std::put_time(tm, "%z");
+    String s = os.str();
+    int h = String(s.substr(0, 3)).toInt(0, 10);
+    int m = String(s[0] + s.substr(3)).toInt(0, 10);
+    return -(h * 3600 + m * 60);
+#endif
 }
 
 void Time::buildTimeInfo(const time_t *time, tm *timeinfo, bool utc) const

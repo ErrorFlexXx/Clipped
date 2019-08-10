@@ -85,18 +85,58 @@ bool addAFile(VDFSArchive& archive)
 {
     bool success = true;
     File orig(archive.getBasePath());
-    if(!orig.copy("addFileTest.vdfs")) success = false;
+    String testfile = "addFileTest.vdfs";
+    String newFilename = "NewFile.txt";
+    String data = "This is the text!\r\n";
+    if(!orig.copy(testfile)) success = false;
     if(success)
     {
-        VDFSArchive addAFileArchive("addFileTest.vdfs");
+        VDFSArchive addAFileArchive(testfile);
         if(!addAFileArchive.open())
         {
             LogError() << "Can't open file!";
             return false;
         }
-        auto newFile = addAFileArchive.createFile("NewFile.txt");
-        String data = "This is the text!\r\n";
+        auto newFile = addAFileArchive.createFile(newFilename);
         addAFileArchive.writeFile(newFile, data.data(), data.size());
+    }
+    if(success)
+    {
+        VDFSArchive addAFileArchive(testfile);
+        if(!addAFileArchive.open())
+        {
+            LogError() << "Can't open file!" << testfile;
+            return false;
+        }
+
+        auto addedFileHandle = addAFileArchive.getFile(newFilename);
+        if(!addedFileHandle)
+        {
+            LogError() << "File add test failed! File not found after adding it!";
+            return false;
+        }
+
+        std::vector<char> checkData;
+        if(!addAFileArchive.readFile(addedFileHandle, checkData))
+        {
+            LogError() << "Read file from vdfs failed!";
+            return false;
+        }
+
+        MemorySize gotSize = addedFileHandle->getSize();
+        MemorySize expSize = data.size();
+        if(gotSize != expSize)
+        {
+            LogError() << "Check added file filesize failed! " << "Expected size: " << expSize.toString() << " but got size: " << gotSize.toString();
+            return false;
+        }
+
+        String checkContent = checkData;
+        if(!checkContent.equals(data))
+        {
+            LogError() << "Content written != readback. Expected: \"" << data << "\" but got: \"" << checkContent << "\"";
+            return false;
+        }
     }
 
     return success;
