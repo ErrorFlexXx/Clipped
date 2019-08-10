@@ -9,9 +9,12 @@ int main(void)
 {
     bool status = true;
     Logger() << Logger::MessageType::Debug;
+    LogInfo() << "Create Archive handle.";
     VDFSArchive vdfsArchiver("extractTest.vdfs");
 
+    LogInfo() << "Call vdfsArchiver.open";
     status &= vdfsArchiver.open();
+    LogInfo() << "Check file contents.";
     status &= checkFilesExist(vdfsArchiver);
 
     return !status; //success => true => Return code 0

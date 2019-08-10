@@ -132,7 +132,7 @@ bool File::setPosition(long pos)
 
 long File::getPosition()
 {
-    return file.tellg();
+    return static_cast<long>(file.tellg());
 }
 
 bool File::seek(long delta)
