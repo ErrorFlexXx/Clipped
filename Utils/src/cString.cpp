@@ -397,9 +397,9 @@ namespace Clipped
     template <class T>
     BasicString<T> BasicString<T>::fill(const BasicString<T>& fillChar, size_t length) const
     {
-        BasicString<T> filled;
+        BasicString<T> filled = *this;
 
-        while (filled.length() < length && filled.length() + fillChar.length() < length)
+        while (filled.length() < length && filled.length() + fillChar.length() <= length)
         {
             filled = filled.append(fillChar);
         }
