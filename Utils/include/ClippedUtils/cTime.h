@@ -199,6 +199,8 @@ namespace Clipped
     private:
         time_t time;  //!< The stored time
 
+        time_t getUTCOffsetSeconds() const;
+
         void buildTimeInfo(const time_t* time, tm* timeinfo, bool utc) const;
     };
 
