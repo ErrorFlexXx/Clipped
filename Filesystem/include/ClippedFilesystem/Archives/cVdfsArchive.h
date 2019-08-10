@@ -29,6 +29,7 @@ namespace Clipped
      */
     enum Type : uint32_t
     {
+        BLANK = 0,               //!< Not flagged..
         DIRECTORY = 0x80000000,  //!< Flags as directory.
         LAST = 0x40000000        //!< Flags as last entry of current tree hierachy.
     };
@@ -39,6 +40,8 @@ namespace Clipped
      */
     enum Attribute : uint32_t
     {
+        NORMAL = 0,  //!< The item is normal. That is, the item doesn't have any of the other values in the enumeration.
+        ARCHIVE = 32 //!< The item is archived.
     };
 
     /**
@@ -70,7 +73,11 @@ namespace Clipped
         }
 
         String vdfs_name;          //!< Name of this entry.
-        uint32_t vdfs_offset;      //!< Offset specifying the position of the entry inside the file.
+        uint32_t vdfs_offset;      /** @brief vdfs_offset: Multipurpose field:
+                                    * For files: Offset to the data of the entry inside the file.
+                                    * For directories: Offset to first entry of the dir inside the index.
+                                    */
+                                   //!
         uint32_t vdfs_size;        //!< Size of the payload data.
         Type vdfs_type;            //!< Type of this entry.
         Attribute vdfs_attribute;  //!< Attributes of this entry.
@@ -136,6 +143,12 @@ namespace Clipped
         virtual bool open() override;
 
         /**
+         * @brief finalize does closing tasks. Updates the header and vdfs index.
+         * @return true, if successfully closed.
+         */
+        virtual bool finalize() override;
+
+        /**
          * @brief getFile returns a FileEntry with informations about the stored file.
          * @param filename file to lookup.
          * @return a FileEntry as unique ptr (necessary - polymorphic object (VDFSFileEntry)).
@@ -161,6 +174,8 @@ namespace Clipped
     private:
         BinFile file;   //!< File handle to actually read/write to a file.
         Header header;  //!< Header of the vdfs file.
+        uint32_t directoryOffsetCount; //!< Counter for index writing. Offset to directory contents inside index.
+        bool modified; //!< Flag to remember, if the archive has been modified. If yes, finalize() will rewrite the index/header.
 
         /**
          * @brief The VDFSIndex struct contains attributes about the index section of a vdfs archive.
@@ -216,9 +231,9 @@ namespace Clipped
         /**
          * @brief writeIndexTree writes the local directory tree to the vdfs file.
          * @param tree to write.
-         * @return entries written in this stage.
+         * @return true, if index tree/subtree has been successfully written.
          */
-        size_t writeIndexTree(Tree<String, VdfsEntry>& tree);
+        bool writeIndexTree(Tree<String, VdfsEntry>& tree);
 
         /**
          * @brief allocIndexMemory assures, that the index has free space at the right position.

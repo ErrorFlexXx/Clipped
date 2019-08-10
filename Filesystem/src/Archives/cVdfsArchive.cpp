@@ -28,6 +28,7 @@ const size_t VDFSArchive::EntryNameLength = 64;
 VDFSArchive::VDFSArchive(const Path& filepath)
     : IArchiver(filepath)
     , file(basePath)
+    , directoryOffsetCount(0)
 {
 }
 
@@ -51,8 +52,18 @@ bool VDFSArchive::open()
         LogError() << "VDFS Index corrupt!";
         return result;
     }
-    //writeVDFSIndex(); //Testing...
+
     return result;
+}
+
+bool VDFSArchive::finalize()
+{
+    bool success = writeHeader(header);
+    if(!success) LogError() << "Can't write the VDFS header!";
+    if(success) success = writeVDFSIndex();
+    if(!success) LogError() << "Can't write the VDFS index!";
+
+    return success;
 }
 
 bool VDFSArchive::readVDFSIndex()
@@ -77,9 +88,10 @@ bool VDFSArchive::writeVDFSIndex()
 
     if(!allocIndexMemory()) return false;
     if(!file.setPosition(header.rootOffset)) return false;
-    size_t entriesWritten = writeIndexTree(archiveIndex.index);
+    directoryOffsetCount = 0;
+    bool writeResult = writeIndexTree(archiveIndex.index);
 
-    return entriesToBeWritten == entriesWritten;
+    return writeResult;
 }
 
 bool VDFSArchive::allocIndexMemory()
@@ -172,6 +184,7 @@ size_t VDFSArchive::readIndexTree(Tree<String, VdfsEntry>& tree)
             else //File entry
             {
                 LogDebug() << "Add file to tree: " << entry.vdfs_name;
+                LogDebug() << "Attribute: " << entry.vdfs_attribute;
                 entry.path = entry.vdfs_name;
                 entry.size = entry.vdfs_size;
                 entry.exists = true;
@@ -197,15 +210,47 @@ size_t VDFSArchive::readIndexTree(Tree<String, VdfsEntry>& tree)
     return header.entryCount; //Never reached in general, cause all stages are terminated with LAST entries.
 }
 
-size_t VDFSArchive::writeIndexTree(Tree<String, VdfsEntry>& tree)
+bool VDFSArchive::writeIndexTree(Tree<String, VdfsEntry>& tree)
 {
     bool writeSuccess = true;
 
-    for(auto& child : tree.childs)
+    directoryOffsetCount += tree.countLocalElements();   //Count all files of this stage.
+    directoryOffsetCount += tree.countLocalSubtrees();  //Count directory entries.
+
+    uint32_t subdirectoryOffsetCount = directoryOffsetCount;
+    for(auto& child : tree.childs) //Write directories.
     {
         if(writeSuccess) writeSuccess = file.writeString(child.first.fill(" ", EntryNameLength));
+        if(writeSuccess) writeSuccess = file.write(subdirectoryOffsetCount);
+        if(writeSuccess) writeSuccess = file.write((uint32_t) 0); //Size
+        if(writeSuccess) writeSuccess = file.write(Type::DIRECTORY);
+        if(writeSuccess) writeSuccess = file.write((uint32_t) 0); //Attribute
 
+        subdirectoryOffsetCount += child.second.countChildsAndElements();
     }
+
+    size_t i = 1;
+    size_t elementCount = tree.countLocalElements();
+    for(auto& element : tree.elements) //Write local elements.
+    {
+        Type entryType = Type::BLANK;
+        if(i++ >= elementCount) //Last element ?
+            entryType = Type::LAST;
+
+        if(writeSuccess) writeSuccess = file.writeString(element.first.fill(" ", EntryNameLength));
+        if(writeSuccess) writeSuccess = file.write(element.second.vdfs_offset);
+        if(writeSuccess) writeSuccess = file.write(element.second.vdfs_size); //Size
+        if(writeSuccess) writeSuccess = file.write(entryType);
+        if(writeSuccess) writeSuccess = file.write(element.second.vdfs_attribute); //Attribute
+    }
+
+    //Join directories.
+    for(auto& child : tree.childs) //Write subdirectory contents.
+    {
+        writeIndexTree(child.second);
+    }
+
+    return writeSuccess;
 }
 
 std::unique_ptr<FileEntry> VDFSArchive::getFile(const Path& filepath)
@@ -314,7 +359,7 @@ bool VDFSArchive::writeHeader(const VDFSArchive::Header& header)
     else  // Comment size ok
         if (result) result = file.writeString(header.comment.fill(CommentFillChar, CommentLength));
 
-    if (result && header.signature.length() > SignatureLength)
+    if (header.signature.length() > SignatureLength)
     {
         LogWarn() << "Header signature too large (" << header.signature.length()
                   << ")! Cutted to max length (" << SignatureLength << ").";
