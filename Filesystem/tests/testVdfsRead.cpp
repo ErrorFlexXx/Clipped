@@ -6,6 +6,8 @@ using namespace Clipped;
 bool checkFilesExist(VDFSArchive& archive);
 bool checkFilesDoesntExist(VDFSArchive& archive);
 bool addAFile(VDFSArchive& archive);
+bool removeAFile(VDFSArchive& archive);
+bool checkEmptyDirGetsRemoved(VDFSArchive& archive);
 
 int main(void)
 {
@@ -16,12 +18,14 @@ int main(void)
 
     LogInfo() << "Call vdfsArchiver.open";
     status &= vdfsArchiver.open();
-    LogInfo() << "Check file contents.";
+
     status &= checkFilesExist(vdfsArchiver);
-    LogInfo() << "Check unstored file contents.";
     status &= checkFilesDoesntExist(vdfsArchiver);
-    LogInfo() << "Check addAFile.";
     status &= addAFile(vdfsArchiver);
+    status &= removeAFile(vdfsArchiver);
+    status &= checkEmptyDirGetsRemoved(vdfsArchiver);
+
+    status &= vdfsArchiver.close();
 
     if(status)
         LogInfo() << "All tests passed!";
@@ -37,6 +41,7 @@ int main(void)
  */
 bool checkFilesExist(VDFSArchive& archive)
 {
+    LogInfo() << "Testcase: " << __FUNCTION__;
     bool result = true;
 
     Path filesToCheck[] = {"testfile0.txt",
@@ -62,6 +67,7 @@ bool checkFilesExist(VDFSArchive& archive)
 
 bool checkFilesDoesntExist(VDFSArchive& archive)
 {
+    LogInfo() << "Testcase: " << __FUNCTION__;
     bool result = true;
 
     Path filesDoesntExist[] = {"NotFound.txt",
@@ -81,63 +87,161 @@ bool checkFilesDoesntExist(VDFSArchive& archive)
     return result;
 }
 
+String addTestFilename = "NewFile.txt";
+
 bool addAFile(VDFSArchive& archive)
 {
-    bool success = true;
-    File orig(archive.getBasePath());
-    String testfile = "addFileTest.vdfs";
-    String newFilename = "NewFile.txt";
+    LogInfo() << "Testcase: " << __FUNCTION__;
+    Path origFilepath = archive.getBasePath();
+    Path addTestFilepath = origFilepath;
+    addTestFilepath.setFilename(origFilepath.getFilename().append("-addTest"));
+    File orig(origFilepath);
+
     String data = "This is the text!\r\n";
-    if(!orig.copy(testfile)) success = false;
-    if(success)
+    if(!orig.copy(addTestFilepath))
     {
-        VDFSArchive addAFileArchive(testfile);
+        LogError() << "Copy file " << orig.getFilepath() << " to " << addTestFilepath << " failed!";
+        return false;
+    }
+
+    {   //Archive close scope.
+        VDFSArchive addAFileArchive(addTestFilepath);
         if(!addAFileArchive.open())
         {
-            LogError() << "Can't open file!";
+            LogError() << "Can't open file: " << addAFileArchive.getBasePath();
             return false;
         }
-        auto newFile = addAFileArchive.createFile(newFilename);
+        auto newFile = addAFileArchive.createFile(addTestFilename);
         addAFileArchive.writeFile(newFile, data.data(), data.size());
+        if(!addAFileArchive.close())
+        {
+            LogError() << "VDFS Closing failed!";
+            return false;
+        }
     }
-    if(success)
+
+    VDFSArchive addAFileArchive(addTestFilepath);
+    if(!addAFileArchive.open())
     {
-        VDFSArchive addAFileArchive(testfile);
-        if(!addAFileArchive.open())
+        LogError() << "Can't open file!" << addAFileArchive.getBasePath();
+        return false;
+    }
+
+    auto addedFileHandle = addAFileArchive.getFile(addTestFilename);
+    if(!addedFileHandle)
+    {
+        LogError() << "File add test failed! File not found after adding it!";
+        return false;
+    }
+
+    std::vector<char> checkData;
+    if(!addAFileArchive.readFile(addedFileHandle, checkData))
+    {
+        LogError() << "Read file from vdfs failed!";
+        return false;
+    }
+
+    MemorySize gotSize = addedFileHandle->getSize();
+    MemorySize expSize = data.size();
+    if(gotSize != expSize)
+    {
+        LogError() << "Check added file filesize failed! " << "Expected size: " << expSize.toString() << " but got size: " << gotSize.toString();
+        return false;
+    }
+
+    String checkContent = checkData;
+    if(!checkContent.equals(data))
+    {
+        LogError() << "Content written != readback. Expected: \"" << data << "\" but got: \"" << checkContent << "\"";
+        return false;
+    }
+    if(!addAFileArchive.close())
+    {
+        LogError() << "VDFS Closing failed!";
+        return false;
+    }
+
+    return true;
+}
+
+bool removeAFile(VDFSArchive& archive)
+{
+    LogInfo() << "Testcase: " << __FUNCTION__;
+    Path origFilepath = archive.getBasePath();
+    Path addTestFilepath = origFilepath;
+    Path removeTestFilepath = origFilepath;
+    addTestFilepath.setFilename(origFilepath.getFilename().append("-addTest"));
+    removeTestFilepath.setFilename(origFilepath.getFilename().append("-removeTest"));
+
+    File addTestFile(addTestFilepath);
+    if(!addTestFile.copy(removeTestFilepath))
+    {
+        LogError() << "Copy file " << addTestFile.getFilepath() << " to " << removeTestFilepath << " failed!";
+        return false;
+    }
+
+    //Remove a file:
+    {
+        VDFSArchive removeFileArchive(removeTestFilepath);
+        if(!removeFileArchive.open())
         {
-            LogError() << "Can't open file!" << testfile;
+            LogError() << "Can't open archive: " << removeFileArchive.getBasePath();
             return false;
         }
-
-        auto addedFileHandle = addAFileArchive.getFile(newFilename);
-        if(!addedFileHandle)
+        auto entry = removeFileArchive.getFile(addTestFilename);
+        if(!entry)
         {
-            LogError() << "File add test failed! File not found after adding it!";
+            LogError() << "Element to remove: " << addTestFilename << " not found in archive!";
             return false;
         }
-
-        std::vector<char> checkData;
-        if(!addAFileArchive.readFile(addedFileHandle, checkData))
+        if(!removeFileArchive.removeFile(entry))
         {
-            LogError() << "Read file from vdfs failed!";
+            LogError() << "Vdfs removeFile failed!";
             return false;
         }
-
-        MemorySize gotSize = addedFileHandle->getSize();
-        MemorySize expSize = data.size();
-        if(gotSize != expSize)
+        if(!removeFileArchive.close())
         {
-            LogError() << "Check added file filesize failed! " << "Expected size: " << expSize.toString() << " but got size: " << gotSize.toString();
-            return false;
-        }
-
-        String checkContent = checkData;
-        if(!checkContent.equals(data))
-        {
-            LogError() << "Content written != readback. Expected: \"" << data << "\" but got: \"" << checkContent << "\"";
+            LogError() << "VDFS Closing failed!";
             return false;
         }
     }
 
-    return success;
+    //Check if file is gone:
+    {
+        VDFSArchive removeFileArchive(removeTestFilepath);
+        if(!removeFileArchive.open())
+        {
+            LogError() << "Can't open archive: " << removeFileArchive.getBasePath();
+            return false;
+        }
+        auto entry = removeFileArchive.getFile(addTestFilename);
+        if(nullptr != entry)
+        {
+            LogError() << "Removed file is still stored in the archive!";
+            return false;
+        }
+        if(!removeFileArchive.close())
+        {
+            LogError() << "VDFS Closing failed!";
+            return false;
+        }
+    }
+    return true;
+}
+
+bool checkEmptyDirGetsRemoved(VDFSArchive& archive)
+{
+    LogInfo() << "Testcase: " << __FUNCTION__;
+    Path origFilepath = archive.getBasePath();
+    Path emptyDirTestFilepath = origFilepath;
+    emptyDirTestFilepath.setFilename(origFilepath.getFilename().append("-emptyDirTest"));
+
+    File origFile(origFilepath);
+    if(!origFile.copy(emptyDirTestFilepath))
+    {
+        LogError() << "Copy file " << origFile.getFilepath() << " to " << emptyDirTestFilepath << " failed!";
+        return false;
+    }
+
+    return true;
 }

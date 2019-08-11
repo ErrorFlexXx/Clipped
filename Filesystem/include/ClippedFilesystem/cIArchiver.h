@@ -72,6 +72,12 @@ namespace Clipped
         virtual bool open() = 0;
 
         /**
+         * @brief close closes this archives instance. Triggers closing tasks that might be required, by the specific archiver.
+         * @return true, if closed successfully.
+         */
+        virtual bool close() = 0;
+
+        /**
          * @brief finalize function to actually write contents to disk. To be overriden, if required by archiver.
          *   Required for some archivers, that can't change single entries, without updating an index or other data, too.
          * @return true, if written successfully.
@@ -127,6 +133,13 @@ namespace Clipped
          * @return true, if the file has been written successfully.
          */
         virtual bool writeFile(FileEntry* fileEntry, const std::vector<char>& src) = 0;
+
+        /**
+         * @brief removeFile removes a file from the archive.
+         * @param fileEntry to remove.
+         * @return true, if removed successfully.
+         */
+        virtual bool removeFile(FileEntry* fileEntry) = 0;
 
         /**
          * @brief getBasePath returns the basePath of this instance.

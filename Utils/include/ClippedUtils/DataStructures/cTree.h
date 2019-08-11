@@ -118,9 +118,7 @@ namespace Clipped
          * @param key to lookup
          * @return reference to element specified by key.
          */
-        const T& getElement(const I& key) { return elements[key]; }
-
-        T& getElementRef(const I& key) { return elements[key]; }
+        T& getElement(const I& key) { return elements[key]; }
 
         /**
          * @brief getElements gets a complete map of all elements of this tree layer.
@@ -149,6 +147,34 @@ namespace Clipped
         {
             auto it = elements.find(key);
             if (it != elements.end()) elements.erase(it);
+        }
+
+        /**
+         * @brief removeElement removes element with key from the tree.
+         *   Searches recursively for the given element.
+         * @param key to delete
+         * @param element to delete
+         * @return true, if successfully deleted.
+         */
+        bool removeElement(const I& key, const T* element)
+        {
+            if(elementExist(key)) //Look for element locally
+            {
+                if(&getElement(key) == element)
+                {
+                    removeElement(key);
+                    return true;
+                }
+            }
+            else //Lookup child trees
+            {
+                for(auto & child : childs)
+                {
+                    if(child.second.removeElement(key, element))
+                        return true; //Removed successfully. Stop searching.
+                }
+            }
+            return false; //Not found locally and not in child trees.
         }
 
         /**
@@ -252,6 +278,20 @@ namespace Clipped
             for(const auto& child : childs)
                 count += child.second.countChildsAndElements();
             return count;
+        }
+
+        /**
+         * @brief removeEmptyChilds recursive cleanup of empty child trees.
+         */
+        void removeEmptyChilds()
+        {
+            for(auto child : childs) //Cleanup this stage.
+            {
+                if(child.second.countLocalElements() == 0 && child.second.countLocalSubtrees() == 0)
+                    removeSubtree(child.first);
+            }
+            for(auto child : childs) //Cleanup childs.
+                child.second.removeEmptyChilds();
         }
 
         std::map<I, Tree<I, T>> childs;  //!< subtrees identified by key of type I.

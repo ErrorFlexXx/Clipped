@@ -126,6 +126,20 @@ BasicPath<T>& BasicPath<T>::operator+(const BasicString<T>& rhs)
     return *this;
 }
 
+template <class T>
+BasicPath<T>& BasicPath<T>::setFilename(const BasicString<T>& rhs)
+{
+    BasicString<T> newPath;
+    if(!getDirectory().empty())
+        newPath += getDirectory() + DELIM;
+    newPath += rhs;
+    if(!getExtension().empty())
+        newPath += FILE_EXT_DELIM + getExtension();
+
+    *this = newPath;
+    return *this;
+}
+
 // Please compile template class for the following types:
 namespace Clipped
 {

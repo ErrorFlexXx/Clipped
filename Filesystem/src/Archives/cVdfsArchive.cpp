@@ -61,6 +61,11 @@ bool VDFSArchive::open()
     return result;
 }
 
+bool VDFSArchive::close()
+{
+    return finalize();
+}
+
 bool VDFSArchive::finalize()
 {
     bool success = true;
@@ -92,20 +97,12 @@ bool VDFSArchive::readVDFSIndex()
     file.setPosition(header.rootOffset);
     archiveIndex.currentStoredSize = 0; //Reset length. Gets updated in recursive createIndexTree calls.
     size_t entriesRead = readIndexTree(archiveIndex.index);
-    LogDebug() << "Index Length: " << MemorySize(archiveIndex.currentStoredSize).toString();
     return entriesRead == header.entryCount;
 }
 
 bool VDFSArchive::writeVDFSIndex()
 {
-    size_t entriesToBeWritten = archiveIndex.index.countChildsAndElements();
-    size_t currentIndexBytes = archiveIndex.currentStoredSize;
-
-    LogDebug() << "Entries to be written: " << entriesToBeWritten;
-    LogDebug() << "Index Bytes per entry: " << header.entrySize;
-    LogDebug() << "Current Index Bytes: " << currentIndexBytes;
-    size_t requiredIndexSpace = header.entrySize * entriesToBeWritten;
-    LogDebug() << "Required Index space: " << requiredIndexSpace;
+    archiveIndex.index.removeEmptyChilds(); //Cleanup of empty directories - Unsupported by vdfs!
 
     if(!allocIndexMemory()) return false;
     if(!file.setPosition(header.rootOffset)) return false;
@@ -124,7 +121,11 @@ bool VDFSArchive::allocIndexMemory()
     do
     {
         VdfsEntry* firstEntry = nullptr;
-        if(!getFirstStoredEntry(firstEntry)) return false;
+        if(!getFirstStoredEntry(firstEntry))
+        {
+            LogError() << "File corrupt or index is empty!";
+            return false;
+        }
         availableIndexMemory = firstEntry->vdfs_offset - header.rootOffset;
         if(availableIndexMemory < newIndexByteSize) //Not enaugh place ?
         {
@@ -139,7 +140,11 @@ bool VDFSArchive::moveEntryDataToTheEnd(VdfsEntry*& entry)
 {
     bool success = true;
     char* tmpData = new char[entry->vdfs_size];
-    if(tmpData == nullptr) return false;
+    if(tmpData == nullptr)
+    {
+        LogError() << "Out of memory!";
+        return false;
+    }
     success = file.setPosition(entry->vdfs_offset);
     if(success) success = file.readBytes(tmpData, entry->vdfs_size);
     if(success) success = file.setPosition(file.getSize());
@@ -193,18 +198,11 @@ size_t VDFSArchive::readIndexTree(Tree<String, VdfsEntry>& tree)
             //After that the subdirectory contents, follow.
             if (entry.vdfs_type & Type::DIRECTORY)
             {
-                LogDebug() << "Directory dump.";
-                LogDebug() << "Offset: " << entry.vdfs_offset;
-                LogDebug() << "Size: " << entry.vdfs_size;
-                LogDebug() << "Attribute: " << entry.vdfs_attribute;
                 //Recursivly add next directory stage.
-                //LogDebug() << "Directory " << entry.vdfs_name;
                 tree.addSubtree(entry.vdfs_name);
             }
             else //File entry
             {
-                LogDebug() << "Add file to tree: " << entry.vdfs_name;
-                LogDebug() << "Attribute: " << entry.vdfs_attribute;
                 entry.path = entry.vdfs_name;
                 entry.size = entry.vdfs_size;
                 tree.addElement(entry.path, entry);
@@ -212,10 +210,8 @@ size_t VDFSArchive::readIndexTree(Tree<String, VdfsEntry>& tree)
 
             if (entry.vdfs_type & Type::LAST)
             {
-                //LogDebug() << "Last element of stage.";
                 for( auto& subtree : tree.getSubtrees())
                 {
-                    //LogDebug() << "Join subtree with key: " << subtree.first;
                     i += readIndexTree(subtree.second); //Add subentry processed
                 }
                 return i;
@@ -285,7 +281,9 @@ FileEntry* VDFSArchive::getVdfsFile(const Path& filepath, bool createIfNotFound)
         if ( createIfNotFound || subtreeExists)
         {
             if(!subtreeExists)
+            {
                 header.entryCount++;
+            }
             searchIndex = &searchIndex->getSubtree(stage);
         }
         else
@@ -297,8 +295,11 @@ FileEntry* VDFSArchive::getVdfsFile(const Path& filepath, bool createIfNotFound)
     if (createIfNotFound || searchIndex->elementExist(file))
     {
         if(!fileExists)
+        {
             header.entryCount++;
-        return &searchIndex->getElementRef(file);
+            header.fileCount++;
+        }
+        return &searchIndex->getElement(file);
     }
     return nullptr;
 }
@@ -376,6 +377,27 @@ bool VDFSArchive::writeFile(FileEntry* fileEntry, const std::vector<char>& src)
     return writeFile(fileEntry, src.data(), src.size());
 }
 
+bool VDFSArchive::removeFile(FileEntry* fileEntry)
+{
+    VdfsEntry* vdfsEntry;
+    if(!checkFileEntryIsVdfsEntry(fileEntry, vdfsEntry))
+    {
+        LogError() << "Handle given, that wasn't created by an VDFSArchive instance!";
+        return false;
+    }
+    size_t sizeOfFile = vdfsEntry->vdfs_size;
+    bool removed = archiveIndex.index.removeElement(fileEntry->getPath(), vdfsEntry);
+    if(removed)
+    {
+        //Update header:
+        modified = true; //Update index on disk, if archive gets closed.
+        header.fileCount--;
+        header.contentSize -= sizeOfFile;
+        header.entryCount--;
+    }
+    return removed;
+}
+
 bool VDFSArchive::readHeader(VDFSArchive::Header& header)
 {
     bool result = true;
@@ -391,11 +413,6 @@ bool VDFSArchive::readHeader(VDFSArchive::Header& header)
     if (result) result = file.read(header.entrySize);
 
     header.comment = header.comment.trim(CommentFillChar);
-
-    if(result)
-    {
-        LogDebug() << header.toString();
-    }
 
     return result;
 }

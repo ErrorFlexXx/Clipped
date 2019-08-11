@@ -104,6 +104,13 @@ namespace Clipped
          */
         BasicPath<T>& operator+(const BasicString<T>& rhs);
 
+        /**
+         * @brief setFilename sets or overwrites the filename of this path.
+         *   The directory and file externsion part are kept.
+         * @param rhs the filename to set.
+         * @return reference to this object.
+         */
+        BasicPath<T>& setFilename(const BasicString<T>& rhs);
     };                                               // class BasicPath
 
     // extern template class BasicPath<char>;

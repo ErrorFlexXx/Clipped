@@ -14,6 +14,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** \file cVdfsArchive
+ * An archiver to store files in a virtual filesystem.
+ * Implemented functionalities:
+ *  - Access contents as directory tree with paths.
+ *  - Add a file to the archive.
+ *  - Remove a file from the archive.
+ * Todo:
+ * - Maintain memory gaplist to fill in new contents in gaps, if possible.
+ * - Create a new VDFS Archive from scratch, without opening an existing.
+ * - Iterate over files.
+ */
+
 #pragma once
 
 #include <ClippedFilesystem/cIArchiver.h>
@@ -77,7 +89,6 @@ namespace Clipped
                                     * For files: Offset to the data of the entry inside the file.
                                     * For directories: Offset to first entry of the dir inside the index.
                                     */
-                                   //!
         uint32_t vdfs_size;        //!< Size of the payload data.
         Type vdfs_type;            //!< Type of this entry.
         Attribute vdfs_attribute;  //!< Attributes of this entry.
@@ -145,6 +156,12 @@ namespace Clipped
         virtual bool open() override;
 
         /**
+         * @brief close closes the vdfs archive. Updates the header / index on disk.
+         * @return true, if closed successfully.
+         */
+        virtual bool close() override;
+
+        /**
          * @brief finalize does closing tasks. Updates the header and vdfs index.
          * @return true, if successfully closed.
          */
@@ -162,14 +179,14 @@ namespace Clipped
          * @brief getFile returns a FileEntry with informations about the stored file.
          * @param filename file to lookup.
          * @param create creates this entry in the index, if it doesn't exists.
-         * @return a FileEntry as unique ptr (necessary - polymorphic object (VDFSFileEntry)).
+         * @return FileEntry pointer or a nullptr, if not found.
          */
         virtual FileEntry* getFile(const Path& filepath) override;
 
         /**
          * @brief createFile gets a handle to a new or to be overriden file.
          * @param filepath of the new file.
-         * @return a FileEntry handle.
+         * @return FileEntry pointer in any case.
          */
         virtual FileEntry* createFile(const Path& filepath) override;
 
@@ -185,15 +202,7 @@ namespace Clipped
         /** \copydoc cIArchiver::writeFile(FileEntry&,const std::vector<char>&) */
         virtual bool writeFile(FileEntry* fileEntry, const std::vector<char>& src) override;
 
-        /**
-         * @brief getEntries returns entries with matching file extension
-         * @param extension to search for
-         * @param vdfsPath optionally only in a particular directory
-         * @param recursive by default recursive searching from given vdfsPath origin
-         * @return a container of Entries.
-         */
-        std::vector<VdfsEntry> getEntries(const Path& extension, const Path& vdfsPath = "",
-                                      bool recursive = true);
+        virtual bool removeFile(FileEntry* fileEntry) override;
 
     private:
         BinFile file;   //!< File handle to actually read/write to a file.
