@@ -39,7 +39,7 @@ namespace Clipped
     /**
      * @brief The Type enum flags describing the type of an entry.
      */
-    enum Type : uint32_t
+    enum EntryType : uint32_t
     {
         BLANK = 0,               //!< Not flagged..
         DIRECTORY = 0x80000000,  //!< Flags as directory.
@@ -50,7 +50,7 @@ namespace Clipped
      * @brief The Attribute enum further attributes for entries (Windows file attributes like
      * Archive = 32).
      */
-    enum Attribute : uint32_t
+    enum EntryAttribute : uint32_t
     {
         NORMAL = 0,  //!< The item is normal. That is, the item doesn't have any of the other values in the enumeration.
         ARCHIVE = 32 //!< The item is archived.
@@ -90,8 +90,8 @@ namespace Clipped
                                     * For directories: Offset to first entry of the dir inside the index.
                                     */
         uint32_t vdfs_size;        //!< Size of the payload data.
-        Type vdfs_type;            //!< Type of this entry.
-        Attribute vdfs_attribute;  //!< Attributes of this entry.
+        EntryType vdfs_type;            //!< Type of this entry.
+        EntryAttribute vdfs_attribute;  //!< Attributes of this entry.
     };
 
     /**
@@ -102,7 +102,7 @@ namespace Clipped
         /**
          * @brief The VDFS File Header contains informations about the vdfs file.
          */
-        struct Header
+        struct VDFSHeader
         {
             static size_t getByteSize(const size_t commentLength, const size_t signatureLength)
             {
@@ -147,6 +147,9 @@ namespace Clipped
          */
         VDFSArchive(const Path& filepath);
 
+        /**
+         * @brief ~VDFSArchive destructs this archive. Calls finalize to ensure a clean index on file close.
+         */
         virtual ~VDFSArchive();
 
         /**
@@ -205,21 +208,19 @@ namespace Clipped
         virtual bool removeFile(FileEntry* fileEntry) override;
 
     private:
-        BinFile file;   //!< File handle to actually read/write to a file.
-        Header header;  //!< Header of the vdfs file.
-        uint32_t directoryOffsetCount; //!< Counter for index writing. Offset to directory contents inside index.
-        bool modified; //!< Flag to remember, if the archive has been modified. If yes, finalize() will rewrite the index/header.
+        BinFile file;                   //!< File handle to actually read/write to a file.
+        VDFSHeader header;              //!< Header of the vdfs file.
+        uint32_t directoryOffsetCount;  //!< Counter for index writing. Offset to directory contents inside index.
+        bool modified;                  //!< To be set if the index changes. finalize() will update it on archive closing.
 
         /**
          * @brief The VDFSIndex struct contains attributes about the index section of a vdfs archive.
          */
-        struct VDFSIndex
+        struct
         {
-            VDFSIndex() : currentStoredSize(0) {}
-
-            MemorySize currentStoredSize;   //!< Size of the index that is currently stored on the file in bytes.
-            Tree<String, VdfsEntry> index;  //!< Root stage of hierachical entry list.
-        } archiveIndex; //!< informations about the index and it's properties.
+            MemorySize currentStoredSize = 0;   //!< Size of the index that is currently stored on the file in bytes.
+            Tree<String, VdfsEntry> indexTree;  //!< Root stage of hierachical entry list.
+        } vdfsIndex;                            //!< informations about the index and it's properties.
 
         //VDFS Archive specific properties:
         static const String CommentFillChar;    //!< Character used to fill up strings to target width.
@@ -232,14 +233,14 @@ namespace Clipped
          * @param header data
          * @return true if successfully read, false otherwise.
          */
-        bool readHeader(Header& header);
+        bool readHeader(VDFSHeader& header);
 
         /**
          * @brief writeHeader writes the given header to the file.
          * @param header to be written.
          * @return true if successfully written, false otherwise.
          */
-        bool writeHeader(const VDFSArchive::Header& header);
+        bool writeHeader(const VDFSArchive::VDFSHeader& header);
 
         /**
          * @brief readVDFSIndex reads the file index for the vdfs file.

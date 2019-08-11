@@ -95,26 +95,26 @@ bool VDFSArchive::finalize()
 bool VDFSArchive::readVDFSIndex()
 {
     file.setPosition(header.rootOffset);
-    archiveIndex.currentStoredSize = 0; //Reset length. Gets updated in recursive createIndexTree calls.
-    size_t entriesRead = readIndexTree(archiveIndex.index);
+    vdfsIndex.currentStoredSize = 0; //Reset length. Gets updated in recursive createIndexTree calls.
+    size_t entriesRead = readIndexTree(vdfsIndex.indexTree);
     return entriesRead == header.entryCount;
 }
 
 bool VDFSArchive::writeVDFSIndex()
 {
-    archiveIndex.index.removeEmptyChilds(); //Cleanup of empty directories - Unsupported by vdfs!
+    vdfsIndex.indexTree.removeEmptyChilds(); //Cleanup of empty directories - Unsupported by vdfs!
 
     if(!allocIndexMemory()) return false;
     if(!file.setPosition(header.rootOffset)) return false;
     directoryOffsetCount = 0;
-    bool writeResult = writeIndexTree(archiveIndex.index);
+    bool writeResult = writeIndexTree(vdfsIndex.indexTree);
 
     return writeResult;
 }
 
 bool VDFSArchive::allocIndexMemory()
 {
-    size_t entriesToBeWritten = archiveIndex.index.countChildsAndElements();
+    size_t entriesToBeWritten = vdfsIndex.indexTree.countChildsAndElements();
     size_t newIndexByteSize = header.entrySize * entriesToBeWritten;
     size_t availableIndexMemory = 0;
 
@@ -161,7 +161,7 @@ bool VDFSArchive::moveEntryDataToTheEnd(VdfsEntry*& entry)
 bool VDFSArchive::getFirstStoredEntry(VdfsEntry*& entry)
 {
     entry = nullptr;
-    for(auto& treeElement : archiveIndex.index)
+    for(auto& treeElement : vdfsIndex.indexTree)
     {
         if(entry && treeElement.second.vdfs_offset < entry->vdfs_offset)
         {
@@ -190,25 +190,22 @@ size_t VDFSArchive::readIndexTree(Tree<String, VdfsEntry>& tree)
 
         if(interpretResult) //If all entry data has been successfully read from file
         {
-            archiveIndex.currentStoredSize += file.getPosition() - beforeEntryRead;
+            vdfsIndex.currentStoredSize += file.getPosition() - beforeEntryRead;
             entry.vdfs_name = entry.vdfs_name.trim(); //Remove whitespaces (Fill char in the archive)
 
-            //Regarding the VDFS file format:
-            //First all directories get listed. Files afterwards.
-            //After that the subdirectory contents, follow.
-            if (entry.vdfs_type & Type::DIRECTORY)
+            if (entry.vdfs_type & EntryType::DIRECTORY) //Ordering in VDFS -> first enumerate existing directories
             {
                 //Recursivly add next directory stage.
                 tree.addSubtree(entry.vdfs_name);
             }
-            else //File entry
+            else //Ordering in VDFS -> secondly list files in this directory stage.
             {
                 entry.path = entry.vdfs_name;
                 entry.size = entry.vdfs_size;
                 tree.addElement(entry.path, entry);
             }
 
-            if (entry.vdfs_type & Type::LAST)
+            if (entry.vdfs_type & EntryType::LAST) //Ordering in VDFS -> third, after local dirs and files join the directory contents.
             {
                 for( auto& subtree : tree.getSubtrees())
                 {
@@ -229,7 +226,7 @@ bool VDFSArchive::writeIndexTree(Tree<String, VdfsEntry>& tree)
 {
     bool writeSuccess = true;
 
-    directoryOffsetCount += tree.countLocalElements();   //Count all files of this stage.
+    directoryOffsetCount += tree.countLocalElements();  //Count all files of this stage.
     directoryOffsetCount += tree.countLocalSubtrees();  //Count directory entries.
 
     uint32_t subdirectoryOffsetCount = directoryOffsetCount;
@@ -238,7 +235,7 @@ bool VDFSArchive::writeIndexTree(Tree<String, VdfsEntry>& tree)
         if(writeSuccess) writeSuccess = file.writeString(child.first.fill(" ", EntryNameLength));
         if(writeSuccess) writeSuccess = file.write(subdirectoryOffsetCount);
         if(writeSuccess) writeSuccess = file.write((uint32_t) 0); //Size
-        if(writeSuccess) writeSuccess = file.write(Type::DIRECTORY);
+        if(writeSuccess) writeSuccess = file.write(EntryType::DIRECTORY);
         if(writeSuccess) writeSuccess = file.write((uint32_t) 0); //Attribute
 
         subdirectoryOffsetCount += child.second.countChildsAndElements();
@@ -248,15 +245,15 @@ bool VDFSArchive::writeIndexTree(Tree<String, VdfsEntry>& tree)
     size_t elementCount = tree.countLocalElements();
     for(auto& element : tree.elements) //Write local elements.
     {
-        Type entryType = Type::BLANK;
+        EntryType entryType = EntryType::BLANK;
         if(i++ >= elementCount) //Last element ?
-            entryType = Type::LAST;
+            entryType = EntryType::LAST;
 
-        if(writeSuccess) writeSuccess = file.writeString(element.first.fill(" ", EntryNameLength));
-        if(writeSuccess) writeSuccess = file.write(element.second.vdfs_offset);
-        if(writeSuccess) writeSuccess = file.write(element.second.vdfs_size); //Size
-        if(writeSuccess) writeSuccess = file.write(entryType);
-        if(writeSuccess) writeSuccess = file.write(element.second.vdfs_attribute); //Attribute
+        if(writeSuccess) writeSuccess = file.writeString(element.first.fill(" ", EntryNameLength)); //EntryName
+        if(writeSuccess) writeSuccess = file.write(element.second.vdfs_offset);     //Offset
+        if(writeSuccess) writeSuccess = file.write(element.second.vdfs_size);       //Size
+        if(writeSuccess) writeSuccess = file.write(entryType);                      //EntryType
+        if(writeSuccess) writeSuccess = file.write(element.second.vdfs_attribute);  //Attribute
     }
 
     //Join directories.
@@ -273,7 +270,7 @@ FileEntry* VDFSArchive::getVdfsFile(const Path& filepath, bool createIfNotFound)
     Path dir = filepath.getDirectory();
     Path file = filepath.getFilenameWithExt();
 
-    auto* searchIndex = &archiveIndex.index;
+    auto* searchIndex = &vdfsIndex.indexTree;
 
     for (String stage : dir.split(Path("/")))
     {
@@ -365,7 +362,7 @@ bool VDFSArchive::writeFile(FileEntry* fileEntry, const char* src, const size_t 
     if(!file.setPosition(writeOffset)) return false;
     if(!file.writeBytes(src, length)) return false;
     vdfsEntry->vdfs_offset = writeOffset;
-    vdfsEntry->vdfs_attribute = Attribute::ARCHIVE;
+    vdfsEntry->vdfs_attribute = EntryAttribute::ARCHIVE;
     header.contentSize += length;
 
     modified = true; //Update index on disk, if archive gets closed.
@@ -386,7 +383,7 @@ bool VDFSArchive::removeFile(FileEntry* fileEntry)
         return false;
     }
     size_t sizeOfFile = vdfsEntry->vdfs_size;
-    bool removed = archiveIndex.index.removeElement(fileEntry->getPath(), vdfsEntry);
+    bool removed = vdfsIndex.indexTree.removeElement(fileEntry->getPath(), vdfsEntry);
     if(removed)
     {
         //Update header:
@@ -398,7 +395,7 @@ bool VDFSArchive::removeFile(FileEntry* fileEntry)
     return removed;
 }
 
-bool VDFSArchive::readHeader(VDFSArchive::Header& header)
+bool VDFSArchive::readHeader(VDFSArchive::VDFSHeader& header)
 {
     bool result = true;
 
@@ -417,7 +414,7 @@ bool VDFSArchive::readHeader(VDFSArchive::Header& header)
     return result;
 }
 
-bool VDFSArchive::writeHeader(const VDFSArchive::Header& header)
+bool VDFSArchive::writeHeader(const VDFSArchive::VDFSHeader& header)
 {
     bool result = true;
 
