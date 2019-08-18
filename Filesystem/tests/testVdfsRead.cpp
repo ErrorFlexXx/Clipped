@@ -8,6 +8,7 @@ bool checkFilesDoesntExist(VDFSArchive& archive);
 bool addAFile(VDFSArchive& archive);
 bool removeAFile(VDFSArchive& archive);
 bool checkEmptyDirGetsRemoved(VDFSArchive& archive);
+bool checkSearchFile(VDFSArchive& archive);
 
 int main(void)
 {
@@ -24,6 +25,7 @@ int main(void)
     status &= addAFile(vdfsArchiver);
     status &= removeAFile(vdfsArchiver);
     status &= checkEmptyDirGetsRemoved(vdfsArchiver);
+    status &= checkSearchFile(vdfsArchiver);
 
     status &= vdfsArchiver.close();
 
@@ -244,4 +246,28 @@ bool checkEmptyDirGetsRemoved(VDFSArchive& archive)
     }
 
     return true;
+}
+
+bool checkSearchFile(VDFSArchive& archive)
+{
+    LogInfo() << "Testcase: " << __FUNCTION__;
+    String searchFile = "testfile1.0.txt";
+    String nonExistentFile = "NonExistentFile.txt";
+    bool result = true;
+
+
+    FileEntry* entry = archive.searchFile(nonExistentFile.toUpper());
+    if(entry != nullptr)
+    {
+        LogError() << "Entry: " << nonExistentFile << " found, but it isn't stored in the archive!";
+        result = false;
+    }
+    entry = archive.searchFile(searchFile.toUpper());
+    if(entry == nullptr)
+    {
+        LogError() << "Entry: " << searchFile << " not found in the archive, but it is stored there!";
+        result = false;
+    }
+
+    return result;
 }
