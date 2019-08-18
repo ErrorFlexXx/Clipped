@@ -179,12 +179,23 @@ namespace Clipped
         FileEntry* getVdfsFile(const Path& filepath, bool createIfNotFound = false);
 
         /**
+         * @brief searchVdfsFile search for a file recursivly in the index.
+         * @param filename to look for.
+         * @param tree to look at.
+         * @return a FileEntry, if found or a nullptr otherwise.
+         */
+        FileEntry* searchVdfsFile(const Path& filename, Tree<String, VdfsEntry>& tree);
+
+        /**
          * @brief getFile returns a FileEntry with informations about the stored file.
          * @param filename file to lookup.
          * @param create creates this entry in the index, if it doesn't exists.
          * @return FileEntry pointer or a nullptr, if not found.
          */
         virtual FileEntry* getFile(const Path& filepath) override;
+
+        /** \copydoc cIArchiver::searchFile */
+        virtual FileEntry* searchFile(const Path& filename) override;
 
         /**
          * @brief createFile gets a handle to a new or to be overriden file.
@@ -194,16 +205,16 @@ namespace Clipped
         virtual FileEntry* createFile(const Path& filepath) override;
 
         /** \copydoc cIArchiver::readFile(const FileEntry&,char*) */
-        virtual bool readFile(const FileEntry* fileEntry, char* dest) override;
+        virtual bool readFile(const FileEntry* fileEntry, uint8_t* dest) override;
 
         /** \copydoc cIArchiver::readFile(const FileEntry&,std::vector<char>&) */
-        virtual bool readFile(const FileEntry* fileEntry, std::vector<char>& dest) override;
+        virtual bool readFile(const FileEntry* fileEntry, std::vector<uint8_t>& dest) override;
 
         /** \copydoc cIArchiver::writeFile(FileEntry&,const char*) */
-        virtual bool writeFile(FileEntry* fileEntry, const char* src, const size_t length) override;
+        virtual bool writeFile(FileEntry* fileEntry, const uint8_t* src, const size_t length) override;
 
         /** \copydoc cIArchiver::writeFile(FileEntry&,const std::vector<char>&) */
-        virtual bool writeFile(FileEntry* fileEntry, const std::vector<char>& src) override;
+        virtual bool writeFile(FileEntry* fileEntry, const std::vector<uint8_t>& src) override;
 
         virtual bool removeFile(FileEntry* fileEntry) override;
 

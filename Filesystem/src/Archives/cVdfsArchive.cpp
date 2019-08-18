@@ -139,7 +139,7 @@ bool VDFSArchive::allocIndexMemory()
 bool VDFSArchive::moveEntryDataToTheEnd(VdfsEntry*& entry)
 {
     bool success = true;
-    char* tmpData = new char[entry->vdfs_size];
+    uint8_t* tmpData = new uint8_t[entry->vdfs_size];
     if(tmpData == nullptr)
     {
         LogError() << "Out of memory!";
@@ -149,7 +149,7 @@ bool VDFSArchive::moveEntryDataToTheEnd(VdfsEntry*& entry)
     if(success) success = file.readBytes(tmpData, entry->vdfs_size);
     if(success) success = file.setPosition(file.getSize());
     size_t newOffset = file.getPosition();
-    if(success) success = file.writeBytes(const_cast<const char*>(tmpData), entry->vdfs_size);
+    if(success) success = file.writeBytes(tmpData, entry->vdfs_size);
     if(success)
     {
         entry->vdfs_offset = newOffset;
@@ -301,9 +301,31 @@ FileEntry* VDFSArchive::getVdfsFile(const Path& filepath, bool createIfNotFound)
     return nullptr;
 }
 
+FileEntry* VDFSArchive::searchVdfsFile(const Path& filename, Tree<String, VdfsEntry>& tree)
+{
+    if(tree.elementExist(filename.getFilenameWithExt()))
+    {
+        return &tree.getElement(filename.getFilenameWithExt());
+    }
+    else
+    {
+        for(auto & leaf : tree.childs)
+        {
+            FileEntry *result = searchVdfsFile(filename, leaf.second);
+            if(result) return result; //Found in subtrees.
+        }
+    }
+    return nullptr;
+}
+
 FileEntry* VDFSArchive::getFile(const Path& filepath)
 {
     return getVdfsFile(filepath, false);
+}
+
+FileEntry* VDFSArchive::searchFile(const Path& filename)
+{
+    return searchVdfsFile(filename, vdfsIndex.indexTree);
 }
 
 FileEntry* VDFSArchive::createFile(const Path& filepath)
@@ -311,7 +333,7 @@ FileEntry* VDFSArchive::createFile(const Path& filepath)
     return getVdfsFile(filepath, true);
 }
 
-bool VDFSArchive::readFile(const FileEntry* fileEntry, char* dest)
+bool VDFSArchive::readFile(const FileEntry* fileEntry, uint8_t* dest)
 {
     const VdfsEntry* vdfsEntry = dynamic_cast<const VdfsEntry*>(fileEntry);
     if(!vdfsEntry)
@@ -330,7 +352,7 @@ bool VDFSArchive::readFile(const FileEntry* fileEntry, char* dest)
     return true; //Successfully read the file data.
 }
 
-bool VDFSArchive::readFile(const FileEntry* fileEntry, std::vector<char>& dest)
+bool VDFSArchive::readFile(const FileEntry* fileEntry, std::vector<uint8_t>& dest)
 {
     const VdfsEntry* vdfsEntry = dynamic_cast<const VdfsEntry*>(fileEntry);
     if(!vdfsEntry)
@@ -349,7 +371,7 @@ bool VDFSArchive::readFile(const FileEntry* fileEntry, std::vector<char>& dest)
     return true; //Successfully read the file data.
 }
 
-bool VDFSArchive::writeFile(FileEntry* fileEntry, const char* src, const size_t length)
+bool VDFSArchive::writeFile(FileEntry* fileEntry, const uint8_t* src, const size_t length)
 {
     VdfsEntry* vdfsEntry;
     if(!checkFileEntryIsVdfsEntry(fileEntry, vdfsEntry))
@@ -369,7 +391,7 @@ bool VDFSArchive::writeFile(FileEntry* fileEntry, const char* src, const size_t 
     return true;
 }
 
-bool VDFSArchive::writeFile(FileEntry* fileEntry, const std::vector<char>& src)
+bool VDFSArchive::writeFile(FileEntry* fileEntry, const std::vector<uint8_t>& src)
 {
     return writeFile(fileEntry, src.data(), src.size());
 }

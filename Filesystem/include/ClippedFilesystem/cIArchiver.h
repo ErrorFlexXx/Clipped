@@ -95,6 +95,14 @@ namespace Clipped
         virtual FileEntry* getFile(const Path& filepath) = 0;
 
         /**
+         * @brief searchFile looks up a file in the file storage.
+         *   Searches for it recursivly.
+         * @param filename to look for.
+         * @return a pointer to the entry or nullptr, if not found.
+         */
+        virtual FileEntry* searchFile(const Path& filename) = 0;
+
+        /**
          * @brief createFile creates a file handle to add content or overwrite a file in the file storage.
          * @param filepath to the file.
          * @return a file handle - either an existing or a new created.
@@ -107,7 +115,7 @@ namespace Clipped
          * @param dest pointer to the memory to store the data at.
          * @return true, if the file has been read successfully.
          */
-        virtual bool readFile(const FileEntry* fileEntry, char* dest) = 0;
+        virtual bool readFile(const FileEntry* fileEntry, uint8_t* dest) = 0;
 
         /**
          * @brief readFile reads the file data to the given data container.
@@ -115,7 +123,7 @@ namespace Clipped
          * @param dest data container, to store the read data in.
          * @return true, if the file has been read successfully.
          */
-        virtual bool readFile(const FileEntry* fileEntry, std::vector<char>& dest) = 0;
+        virtual bool readFile(const FileEntry* fileEntry, std::vector<uint8_t>& dest) = 0;
 
         /**
          * @brief writeFile writes given data to the file storage with a direct data pointer.
@@ -124,7 +132,7 @@ namespace Clipped
          * @param length the amount of bytes from src data to write.
          * @return true, if the file has been written successfully.
          */
-        virtual bool writeFile(FileEntry* fileEntry, const char* src, const size_t length) = 0;
+        virtual bool writeFile(FileEntry* fileEntry, const uint8_t* src, const size_t length) = 0;
 
         /**
          * @brief writeFile writes given data to the file storage from a std::vector containing the data.
@@ -132,7 +140,7 @@ namespace Clipped
          * @param src the data storage to be written.
          * @return true, if the file has been written successfully.
          */
-        virtual bool writeFile(FileEntry* fileEntry, const std::vector<char>& src) = 0;
+        virtual bool writeFile(FileEntry* fileEntry, const std::vector<uint8_t>& src) = 0;
 
         /**
          * @brief removeFile removes a file from the archive.

@@ -26,38 +26,38 @@ bool BinFile::open(const FileAccessMode& accessMode)
     return File::open(accessMode, FileDataMode::BINARY);
 }
 
-bool BinFile::readBytes(char*& buffer, size_t count)
+bool BinFile::readBytes(uint8_t*& buffer, size_t count)
 {
     if (buffer == nullptr) return false;
-    file.read(buffer, count);
+    file.read(reinterpret_cast<char*>(buffer), count);
     return file.good();
 }
 
-bool BinFile::readBytes(std::vector<char>& buffer, size_t count)
+bool BinFile::readBytes(std::vector<uint8_t>& buffer, size_t count)
 {
     size_t vecPos = buffer.size();
     buffer.insert(buffer.end(), count, 0);
-    file.read(buffer.data() + vecPos, count);
+    file.read(reinterpret_cast<char*>(buffer.data() + vecPos), count);
     return file.good();
 }
 
-bool BinFile::writeBytes(const char* buffer, size_t count)
+bool BinFile::writeBytes(const uint8_t* buffer, size_t count)
 {
     if (buffer == nullptr) return false;
-    file.write(buffer, count);
+    file.write(reinterpret_cast<const char*>(buffer), count);
     return file.good();
 }
 
-bool BinFile::writeBytes(const char* buffer, size_t index, size_t count)
+bool BinFile::writeBytes(const uint8_t* buffer, size_t index, size_t count)
 {
-    const char* tmpBuffer = buffer;
+    const uint8_t* tmpBuffer = buffer;
     tmpBuffer += index;
     return writeBytes(tmpBuffer, count);
 }
 
-bool BinFile::writeBytes(const std::vector<char>& buffer)
+bool BinFile::writeBytes(const std::vector<uint8_t>& buffer)
 {
-    const char* charBuff = buffer.data();
+    const uint8_t* charBuff = buffer.data();
     return writeBytes(charBuff, buffer.size());
 }
 
