@@ -141,16 +141,16 @@ bool File::copy(const Path& destination)
     }
     if(success)
     {
-        uint8_t* buffer = new uint8_t[1024];
+        char* buffer = new char[1024];
         MemorySize i = 0;
         MemorySize size = this->getSize();
         for(i = 0; i + 1024 < size; i += 1024)
         {
-            file.read(reinterpret_cast<char*>(buffer), 1024);
+            file.read(buffer, 1024);
             copy.writeBytes(buffer, 1024);
         }
         size = size - (i); //Calculate left over size.
-        file.read(reinterpret_cast<char*>(buffer), size); //Read rest of content.
+        file.read(buffer, size); //Read rest of content.
         copy.writeBytes(buffer, size); //Write remaining bytes.
 
         delete[] buffer;

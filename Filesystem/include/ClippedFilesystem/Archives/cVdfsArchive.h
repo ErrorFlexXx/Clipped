@@ -205,16 +205,16 @@ namespace Clipped
         virtual FileEntry* createFile(const Path& filepath) override;
 
         /** \copydoc cIArchiver::readFile(const FileEntry&,char*) */
-        virtual bool readFile(const FileEntry* fileEntry, uint8_t* dest) override;
+        virtual bool readFile(const FileEntry* fileEntry, char* dest) override;
 
         /** \copydoc cIArchiver::readFile(const FileEntry&,std::vector<char>&) */
-        virtual bool readFile(const FileEntry* fileEntry, std::vector<uint8_t>& dest) override;
+        virtual bool readFile(const FileEntry* fileEntry, std::vector<char>& dest) override;
 
         /** \copydoc cIArchiver::writeFile(FileEntry&,const char*) */
-        virtual bool writeFile(FileEntry* fileEntry, const uint8_t* src, const size_t length) override;
+        virtual bool writeFile(FileEntry* fileEntry, const char* src, const size_t length) override;
 
         /** \copydoc cIArchiver::writeFile(FileEntry&,const std::vector<char>&) */
-        virtual bool writeFile(FileEntry* fileEntry, const std::vector<uint8_t>& src) override;
+        virtual bool writeFile(FileEntry* fileEntry, const std::vector<char>& src) override;
 
         virtual bool removeFile(FileEntry* fileEntry) override;
 

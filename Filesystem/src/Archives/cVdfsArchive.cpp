@@ -139,7 +139,7 @@ bool VDFSArchive::allocIndexMemory()
 bool VDFSArchive::moveEntryDataToTheEnd(VdfsEntry*& entry)
 {
     bool success = true;
-    uint8_t* tmpData = new uint8_t[entry->vdfs_size];
+    char* tmpData = new char[entry->vdfs_size];
     if(tmpData == nullptr)
     {
         LogError() << "Out of memory!";
@@ -333,7 +333,7 @@ FileEntry* VDFSArchive::createFile(const Path& filepath)
     return getVdfsFile(filepath, true);
 }
 
-bool VDFSArchive::readFile(const FileEntry* fileEntry, uint8_t* dest)
+bool VDFSArchive::readFile(const FileEntry* fileEntry, char* dest)
 {
     const VdfsEntry* vdfsEntry = dynamic_cast<const VdfsEntry*>(fileEntry);
     if(!vdfsEntry)
@@ -352,7 +352,7 @@ bool VDFSArchive::readFile(const FileEntry* fileEntry, uint8_t* dest)
     return true; //Successfully read the file data.
 }
 
-bool VDFSArchive::readFile(const FileEntry* fileEntry, std::vector<uint8_t>& dest)
+bool VDFSArchive::readFile(const FileEntry* fileEntry, std::vector<char>& dest)
 {
     const VdfsEntry* vdfsEntry = dynamic_cast<const VdfsEntry*>(fileEntry);
     if(!vdfsEntry)
@@ -371,7 +371,7 @@ bool VDFSArchive::readFile(const FileEntry* fileEntry, std::vector<uint8_t>& des
     return true; //Successfully read the file data.
 }
 
-bool VDFSArchive::writeFile(FileEntry* fileEntry, const uint8_t* src, const size_t length)
+bool VDFSArchive::writeFile(FileEntry* fileEntry, const char* src, const size_t length)
 {
     VdfsEntry* vdfsEntry;
     if(!checkFileEntryIsVdfsEntry(fileEntry, vdfsEntry))
@@ -391,7 +391,7 @@ bool VDFSArchive::writeFile(FileEntry* fileEntry, const uint8_t* src, const size
     return true;
 }
 
-bool VDFSArchive::writeFile(FileEntry* fileEntry, const std::vector<uint8_t>& src)
+bool VDFSArchive::writeFile(FileEntry* fileEntry, const std::vector<char>& src)
 {
     return writeFile(fileEntry, src.data(), src.size());
 }
