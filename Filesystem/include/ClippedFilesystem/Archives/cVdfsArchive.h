@@ -21,7 +21,6 @@
  *  - Add a file to the archive.
  *  - Remove a file from the archive.
  * Todo:
- * - Maintain memory gaplist to fill in new contents in gaps, if possible.
  * - Create a new VDFS Archive from scratch, without opening an existing.
  * - Iterate over files.
  */
@@ -33,6 +32,7 @@
 #include <ClippedUtils/cTime.h>
 #include <ClippedUtils/DataStructures/cTree.h>
 #include <sstream>
+#include <list>
 
 namespace Clipped
 {
@@ -41,9 +41,9 @@ namespace Clipped
      */
     enum EntryType : uint32_t
     {
-        BLANK = 0,               //!< Not flagged..
-        DIRECTORY = 0x80000000,  //!< Flags as directory.
-        LAST = 0x40000000        //!< Flags as last entry of current tree hierachy.
+        BLANK       = 0,            //!< Not flagged..
+        DIRECTORY   = 0x80000000u,  //!< Flags as directory.
+        LAST        = 0x40000000u   //!< Flags as last entry of current tree hierachy.
     };
 
     /**
@@ -52,26 +52,32 @@ namespace Clipped
      */
     enum EntryAttribute : uint32_t
     {
-        NORMAL = 0,  //!< The item is normal. That is, the item doesn't have any of the other values in the enumeration.
-        ARCHIVE = 32 //!< The item is archived.
+        NORMAL  = 0,    //!< The item is normal. That is, the item doesn't have any of the other values in the enumeration.
+        ARCHIVE = 32u,  //!< The item is archived.
     };
 
     /**
-     * @brief The Entry struct represents all stored properties of a vdfs entry.
+     * @brief The VdfsEntry is a specialization of a regular FileEntry.
      */
     class VdfsEntry : public FileEntry
     {
+        friend class VDFSArchive;
     public:
         VdfsEntry()
-            : FileEntry("", 0)
+            : VdfsEntry(FileEntry("", 0))
+        {}
+
+        VdfsEntry(const Path& path, const MemorySize size)
+            : VdfsEntry(FileEntry(path, size))
         {}
 
         VdfsEntry(const FileEntry& entry)
             : FileEntry(entry)
-        {}
-
-        VdfsEntry(const Path& path, const MemorySize size)
-            : FileEntry(path, size)
+            , vdfs_name("")
+            , vdfs_offset(0)
+            , vdfs_size(0)
+            , vdfs_type(EntryType::BLANK)
+            , vdfs_attribute(EntryAttribute::ARCHIVE)
         {}
 
         static size_t getByteSize(const size_t vdfsNameSize)
@@ -85,14 +91,182 @@ namespace Clipped
         }
 
         String vdfs_name;          //!< Name of this entry.
+
+    private: /* Must not be modified by a user / programmer. VDFSArchiver will update this variables. */
         uint32_t vdfs_offset;      /** @brief vdfs_offset: Multipurpose field:
                                     * For files: Offset to the data of the entry inside the file.
                                     * For directories: Offset to first entry of the dir inside the index.
                                     */
-        uint32_t vdfs_size;        //!< Size of the payload data.
+        uint32_t vdfs_size;             //!< Size of the payload data.
         EntryType vdfs_type;            //!< Type of this entry.
         EntryAttribute vdfs_attribute;  //!< Attributes of this entry.
     };
+
+    /**
+     * @brief A MemoryBlock represents an memory area, identified by a position and size.
+     */
+    class MemoryBlock
+    {
+    public:
+        MemoryBlock()
+            : MemoryBlock(0, 0)
+        {}
+
+        MemoryBlock(const size_t offset, const size_t size)
+            : offset(offset)
+            , size(size)
+        {}
+
+        /**
+         * @brief operator == comparison operator, which checks for equality.
+         * @param rhs right hand side to check.
+         * @return true, if the data is identical.
+         */
+        bool operator==(const MemoryBlock& rhs) const
+        {
+            return offset == rhs.offset && size == rhs.size;
+        }
+
+        /**
+         * @brief operator != comparison operator, which checks for unequality.
+         * @param rhs right hand side to check.
+         * @return true, if the data isn't identical.
+         */
+        bool operator!=(const MemoryBlock& rhs) const
+        {
+            return !(*this == rhs);
+        }
+
+        size_t offset;  //!< Offset in file, where the block is located.
+        size_t size;    //!< Amount of bytes.
+    }; //class MemoryBlock
+
+    /**
+     * @brief The MemoryManager class handles the memory layout.
+     *   It's used to store a memory map and takes care of free memory regions.
+     *   handledBytes size will grow automatically, if memory in the outside region is requested.
+     */
+    class MemoryManager
+    {
+    public:
+        /**
+         * @brief MemoryManager creates a memory manager with an initial storage size of nothing.
+         */
+        MemoryManager()
+            : handledBytes(0)
+        {}
+
+        /**
+         * @brief MemoryManager creates a memory manager.
+         * @param handledMemory the amount of bytes handled by this manager.
+         */
+        MemoryManager(const size_t handledMemory);
+
+        /**
+         * @brief alloc requests 'requestedBytes' amount of bytes.
+         *   Memory location isn't requested. The caller gets some free storage location.
+         * @param requestedBytes amount of bytes to allocate.
+         * @param allocatedMemoryInfo informations about the given memory (pos/size).
+         * @return true, if the memory has been allocated. False, if not.
+         */
+        bool alloc(const size_t requestedBytes, MemoryBlock& allocatedMemoryInfo);
+
+        /**
+         * @brief alloc requests 'requestedBytes' amount of bytes at given offset.
+         * @param offset given location to mark the memory as used.
+         * @param requestedBytes amount of bytes to allocate.
+         * @return true, if the location is available and now allocated. false otherwise.
+         */
+        bool alloc(const size_t offset, const size_t requestedBytes);
+
+        /**
+         * @brief free frees the memory, specified by the freeMemoryInfo informations.
+         *   Combines narrowing free memory sections to a bigger one to optimize memory gaps.
+         * @param freeMemoryInfo infos about the memory to free.
+         * @return true, if the memory has been freed successfully. False, if not.
+         */
+        bool free(const MemoryBlock& freeMemoryInfo);
+
+        /**
+         * @brief free frees the memory, specified by offset and length.
+         * @param offset location of the memory.
+         * @param length amount of bytes.
+         * @return true, if the memory has been freed successfully. False, if not.
+         */
+        bool free(const size_t offset, const size_t length);
+
+        /**
+         * @brief optimizeFreeMemoryBlocks combines adjacent free memory regions to one big memory region.
+         */
+        void optimizeFreeMemoryBlocks();
+
+        /**
+         * @brief getHandledMemorySize getter for the amount of handled bytes.
+         * @return the current amount of bytes handled by this manager.
+         */
+        size_t getHandledMemorySize() const
+        {
+            return handledBytes;
+        }
+
+        /**
+         * @brief getDispersionRatio calculates the dispersion ratio.
+         *  e.g. a totally compressed file without gaps has a dispersion ratio of 0.0.
+         *  e.g. 50% free space gaps and 50% stored data will return 1.0.
+         * @return the dispersion ratio (lower is better).
+         */
+        double getDispersionRatio() const
+        {
+            unsigned long long totalFreeBytes = 0;
+
+            for(const auto& freeBlock : freeMemoryBlocks) //Sum up all freeMemory Blocks.
+            {
+                LogDebug() << "MemoryManager::getDispertionRatio Free Block: " << freeBlock.offset << " size: " << freeBlock.size;
+                totalFreeBytes += freeBlock.size;
+            }
+            //If there are blocks and the last one is the end of handled memory
+//            if(!freeMemoryBlocks.empty() &&
+//               freeMemoryBlocks.back().offset + freeMemoryBlocks.back().size == handledBytes)
+//            {
+//                totalFreeBytes -= freeMemoryBlocks.back().size; //Ignore it - it doesn't cause dispersion.
+//            }
+//            else //The last free block isn't located at the end of handled memory.
+//            {
+//                //Nothing to do.
+//            }
+            LogDebug() << "Handled Bytes: " << handledBytes;
+            return ((double)totalFreeBytes) / ((double)handledBytes);
+        }
+
+    private:
+        std::list<MemoryBlock> freeMemoryBlocks;    //!< List of free memory blocks.
+        MemorySize handledBytes;                    //!< Total size of the handled memory
+
+        /**
+         * @brief allocateInFreeBlock tries to alloc. with existing free blocks.
+         * @param requestedBytes bytes to allocate.
+         * @param allocatedMemoryInfo returned memory info.
+         * @return true, if it has allocated. False otherwise.
+         */
+        bool allocateInFreeBlock(const size_t requestedBytes, MemoryBlock& allocatedMemoryInfo);
+
+        /**
+         * @brief allocateExpandLastFreeBlock enlarges the last free memory block and uses it to allocate.
+         * @param requestedBytes bytes to allocate.
+         * @param allocatedMemoryInfo returned memory info.
+         * @return true, if it has allocated. False otherwise.
+         */
+        bool allocateExpandLastFreeBlock(const size_t requestedBytes, MemoryBlock& allocatedMemoryInfo);
+
+        /**
+         * @brief allocateWithNewMemory enlarges the total size of managed memory to alloc the requested memory.
+         * @param requestedBytes bytes to allocate.
+         * @param allocatedMemoryInfo
+         * @return true, if it has allocated. False otherwise.
+         */
+        bool allocateWithNewMemory(const size_t requestedBytes, MemoryBlock& allocatedMemoryInfo);
+
+    }; //class MemoryManager
 
     /**
      * @brief The VDFSArchive class implements the vdfs file protocol.
@@ -102,8 +276,22 @@ namespace Clipped
         /**
          * @brief The VDFS File Header contains informations about the vdfs file.
          */
-        struct VDFSHeader
+        class VDFSHeader
         {
+            friend class VDFSArchive; //VDFSArchiver is allowed to change all header attributes.
+
+        public:
+            VDFSHeader()
+                : comment("")
+                , signature("")
+                , entryCount(0)
+                , fileCount(0)
+                , creationTime((MSDOSTime32)Time())
+                , contentSize(0)
+                , rootOffset(0)
+                , entrySize(0)
+            {}
+
             static size_t getByteSize(const size_t commentLength, const size_t signatureLength)
             {
                 size_t sum = commentLength + signatureLength;
@@ -116,6 +304,10 @@ namespace Clipped
                 return sum;
             }
 
+            /**
+             * @brief toString creates a textual representation of the VDFS Header.
+             * @return a string describing the vdfs header contents.
+             */
             String toString() const
             {
                 String out = "VDFS Header: ";
@@ -132,13 +324,15 @@ namespace Clipped
 
             String comment;            //!< Comment describing the file.
             String signature;          //!< A signature, e.g. a version indicator.
+
+        private: /* Must not be changed by a user / programmer. VDFSArchiver will update this variables: */
             uint32_t entryCount;       //!< total count of entries inside this archive.
             uint32_t fileCount;        //!< count of files inside this archive.
             MSDOSTime32 creationTime;  //!< MSDOS 32 Bit time regarding the creation time.
             uint32_t contentSize;      //!< total size of this archive in Bytes.
             uint32_t rootOffset;       //!< Offset is where the index starts.
             int32_t entrySize;         //!< Size of the entry section.
-        };
+        }; //class VDFSHeader
 
     public:
         /**
@@ -157,6 +351,13 @@ namespace Clipped
          * @return true, if the initialization has been successfull.
          */
         virtual bool open() override;
+
+        /**
+         * @brief create starts the creation of a new vdfs archive with the given path.
+         *   Note: It gets finally written on disk on a close or finalize call.
+         * @return true, if the file has been created successfully. False otherwise.
+         */
+        bool create();
 
         /**
          * @brief close closes the vdfs archive. Updates the header / index on disk.
@@ -207,11 +408,17 @@ namespace Clipped
 
         virtual bool removeFile(FileEntry* fileEntry) override;
 
+        double getDispersionRatio() const
+        {
+            return memoryManager.getDispersionRatio();
+        }
+
     private:
         BinFile file;                   //!< File handle to actually read/write to a file.
         VDFSHeader header;              //!< Header of the vdfs file.
         uint32_t directoryOffsetCount;  //!< Counter for index writing. Offset to directory contents inside index.
         bool modified;                  //!< To be set if the index changes. finalize() will update it on archive closing.
+        MemoryManager memoryManager;    //!< Memory manager, that keeps track of used/free memory blocks.
 
         /**
          * @brief The VDFSIndex struct contains attributes about the index section of a vdfs archive.
@@ -225,8 +432,9 @@ namespace Clipped
         //VDFS Archive specific properties:
         static const String CommentFillChar;    //!< Character used to fill up strings to target width.
         static const size_t CommentLength;      //!< The length of the comment section inside the header.
-        static const size_t SignatureLength;    //! The length of the signature section inside the header.
+        static const size_t SignatureLength;    //!< The length of the signature section inside the header.
         static const size_t EntryNameLength;    //!< The length of an entries name.
+        static const size_t HeaderLength;       //!< The length of the header area, after which the index starts.
 
         /**
          * @brief readHeader reads the vdfs header.
@@ -279,7 +487,7 @@ namespace Clipped
         /**
          * @brief getFirstStoredEntry gets the entry with the smallest offset from the index.
          * @param entry pointer to vdfsEntry with smallest offset.
-         * @return true, if an entry has been found (is false if the index is empty).
+         * @return true, if an entry has been found. false otherwise.
          */
         bool getFirstStoredEntry(VdfsEntry*& entry);
 
@@ -303,7 +511,7 @@ namespace Clipped
          * @param requiredBytes amount of bytes to store.
          * @return an offset to write the content to.
          */
-        size_t getFreeMemoryOffset(const size_t requiredBytes) const;
+        size_t getFreeMemoryOffset(const size_t requiredBytes);
     }; //class VDFSArchive
 
 }  // namespace Clipped
