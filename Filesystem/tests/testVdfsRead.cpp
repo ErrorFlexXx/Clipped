@@ -18,7 +18,7 @@ int main(void)
 
     LogInfo() << "Call vdfsArchiver.open";
     status &= vdfsArchiver.open();
-
+    LogDebug() << vdfsArchiver.getHeader().toString();
     status &= checkFilesExist(vdfsArchiver);
     status &= checkFilesDoesntExist(vdfsArchiver);
     status &= addAFile(vdfsArchiver);

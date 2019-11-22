@@ -224,17 +224,6 @@ namespace Clipped
                 LogDebug() << "MemoryManager::getDispertionRatio Free Block: " << freeBlock.offset << " size: " << freeBlock.size;
                 totalFreeBytes += freeBlock.size;
             }
-            //If there are blocks and the last one is the end of handled memory
-//            if(!freeMemoryBlocks.empty() &&
-//               freeMemoryBlocks.back().offset + freeMemoryBlocks.back().size == handledBytes)
-//            {
-//                totalFreeBytes -= freeMemoryBlocks.back().size; //Ignore it - it doesn't cause dispersion.
-//            }
-//            else //The last free block isn't located at the end of handled memory.
-//            {
-//                //Nothing to do.
-//            }
-            LogDebug() << "Handled Bytes: " << handledBytes;
             return ((double)totalFreeBytes) / ((double)handledBytes);
         }
 
@@ -411,6 +400,11 @@ namespace Clipped
         double getDispersionRatio() const
         {
             return memoryManager.getDispersionRatio();
+        }
+
+        VDFSHeader& getHeader()
+        {
+            return header;
         }
 
     private:

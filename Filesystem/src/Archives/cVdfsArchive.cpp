@@ -324,6 +324,9 @@ bool VDFSArchive::create()
 {
     bool result = file.open(FileAccessMode::TRUNC);
     header.rootOffset = VDFSHeader::getByteSize(CommentLength, SignatureLength);
+    header.entrySize = 80;
+    memoryManager.alloc(0, header.rootOffset); //Mark header region as used.
+    modified = true;
 }
 
 bool VDFSArchive::close()
@@ -389,12 +392,14 @@ bool VDFSArchive::allocIndexMemory()
         VdfsEntry* firstEntry = nullptr;
         if(!getFirstStoredEntry(firstEntry))
         {
-            LogError() << "File corrupt or index is empty!";
-            return false;
+            return true; //No elements found, that may collide with the header (Blank archive).
         }
         availableIndexMemory = firstEntry->vdfs_offset - header.rootOffset;
+        LogDebug() << "Available index memory: " << availableIndexMemory;
+        LogDebug() << "Index requires: " << newIndexByteSize;
         if(availableIndexMemory < newIndexByteSize) //Not enaugh place ?
         {
+            LogDebug() << "Header needs: " << newIndexByteSize << ". We have: " << availableIndexMemory << " free. Move first file...";
             if(!moveEntryDataToTheEnd(firstEntry)) return false; //Move first file to the end.
         }
     } while(availableIndexMemory < newIndexByteSize); //A file has been moved, recheck or not, then done.
