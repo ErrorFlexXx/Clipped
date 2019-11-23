@@ -27,7 +27,8 @@ bool createEmpty()
     {
         LogDebug() << "Created new archiver instance for new file \"" << newArchive.getBasePath() << "\".";
         newArchive.getHeader().comment = "VDFS Archive created by Clipped.";
-        newArchive.getHeader().signature = "SIG";
+        newArchive.getHeader().signature = "PSVDSC_V2.00\n\r\n\r";
+        LogDebug() << newArchive.getHeader().toString();
         result = newArchive.close();
     }
 
@@ -46,8 +47,8 @@ bool createWithContent()
     {
         LogDebug() << "Created new archiver instance for new file \"" << newArchive.getBasePath() << "\".";
         newArchive.getHeader().comment = "VDFS Archive created by Clipped.";
-        newArchive.getHeader().signature = "SIG";
-        auto* entry = newArchive.createFile("Base/textfile.txt");
+        newArchive.getHeader().signature = "PSVDSC_V2.00\n\r\n\r";
+        auto* entry = newArchive.createFile("Base/Second/textfile.txt");
         result &= (entry != nullptr);
         if(nullptr == entry)
             LogError() << "CreateFile failed!";
@@ -56,6 +57,7 @@ bool createWithContent()
             result = false;
             LogError() << "newArchive.writeFile failed!";
         }
+        LogDebug() << newArchive.getHeader().toString();
         result &= newArchive.close();
     }
 

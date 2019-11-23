@@ -395,11 +395,8 @@ bool VDFSArchive::allocIndexMemory()
             return true; //No elements found, that may collide with the header (Blank archive).
         }
         availableIndexMemory = firstEntry->vdfs_offset - header.rootOffset;
-        LogDebug() << "Available index memory: " << availableIndexMemory;
-        LogDebug() << "Index requires: " << newIndexByteSize;
         if(availableIndexMemory < newIndexByteSize) //Not enaugh place ?
         {
-            LogDebug() << "Header needs: " << newIndexByteSize << ". We have: " << availableIndexMemory << " free. Move first file...";
             if(!moveEntryDataToTheEnd(firstEntry)) return false; //Move first file to the end.
         }
     } while(availableIndexMemory < newIndexByteSize); //A file has been moved, recheck or not, then done.
@@ -501,29 +498,32 @@ bool VDFSArchive::writeIndexTree(Tree<String, VdfsEntry>& tree)
 {
     bool writeSuccess = true;
 
-    directoryOffsetCount += tree.countLocalElements();  //Count all files of this stage.
-    directoryOffsetCount += tree.countLocalSubtrees();  //Count directory entries.
+    size_t i = 1; //Written entries in this stage.
+    const size_t entriesOfStage = tree.countLocalElements() + tree.countLocalSubtrees();
+    directoryOffsetCount += entriesOfStage;  //Add entries of this stage to global counter.
 
-    uint32_t subdirectoryOffsetCount = directoryOffsetCount;
+    uint32_t subdirectoryOffsetCount = directoryOffsetCount; //Total entries of this stage
     for(auto& child : tree.childs) //Write directories.
     {
+        uint32_t entryType = EntryType::DIRECTORY;
         if(writeSuccess) writeSuccess = file.writeString(child.first.fill(" ", EntryNameLength));
         if(writeSuccess) writeSuccess = file.write(subdirectoryOffsetCount);
         if(writeSuccess) writeSuccess = file.write((uint32_t) 0); //Size
-        if(writeSuccess) writeSuccess = file.write(EntryType::DIRECTORY);
+        if(i++ == entriesOfStage) //Last element of this stage ?
+            entryType |= EntryType::LAST;
+        if(writeSuccess) writeSuccess = file.write(entryType);
         if(writeSuccess) writeSuccess = file.write((uint32_t) 0); //Attribute
 
         subdirectoryOffsetCount += child.second.countChildsAndElements();
     }
 
-    size_t i = 1;
-    size_t elementCount = tree.countLocalElements();
     for(auto& element : tree.elements) //Write local elements.
     {
-        EntryType entryType = EntryType::BLANK;
-        if(i++ >= elementCount) //Last element ?
-            entryType = EntryType::LAST;
-
+        uint32_t entryType = EntryType::BLANK;
+        if(i++ == entriesOfStage) //Last element of this stage ?
+        {
+            entryType |= EntryType::LAST;
+        }
         if(writeSuccess) writeSuccess = file.writeString(element.first.fill(" ", EntryNameLength)); //EntryName
         if(writeSuccess) writeSuccess = file.write(element.second.vdfs_offset);     //Offset
         if(writeSuccess) writeSuccess = file.write(element.second.vdfs_size);       //Size
