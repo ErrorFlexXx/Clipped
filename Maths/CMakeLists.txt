@@ -7,11 +7,14 @@ project(ClippedMaths VERSION 0.0.1 DESCRIPTION "Clipped Math library.")
 # Public Header of this library (later copied to e.g. /usr/local/include/Project_Name/):
 set(${PROJECT_NAME}_PUBLIC_HEADER 
     include/${PROJECT_NAME}/cMath.h
+    include/${PROJECT_NAME}/cCRC.h
+    include/${PROJECT_NAME}/cFormat.h
 )
 
 add_library(${PROJECT_NAME} ${CLIPPED_BUILD_TYPE}
     ${${PROJECT_NAME}_PUBLIC_HEADER}
     src/cMath.cpp
+    src/cCRC.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ClippedUtils)
