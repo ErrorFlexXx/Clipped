@@ -14,9 +14,9 @@ namespace Clipped
 
         for(size_t i = 0; i < sizeof(T) * 8; i++) //For every bit
         {
-            if ((value & (1 << i)) != 0)
+            if ((value & ((T)1 << i)) != 0)
             {
-                result |= (T)(1 << ((sizeof(T) * 8 - 1) - i));
+                result |= (T)((T)1 << ((sizeof(T) * 8 - 1) - i));
             }
         }
         return result;
