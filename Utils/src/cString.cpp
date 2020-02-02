@@ -65,7 +65,7 @@ namespace Clipped
     }
 
     template <class T>
-    BasicString<T>::BasicString(const float& value, int precision)
+    BasicString<T>::BasicString(const float& value, size_t precision)
     {
         BasicStringStream<T> stream;
         stream << ::std::fixed << ::std::setprecision(precision) << value;
@@ -73,7 +73,7 @@ namespace Clipped
     }
 
     template <class T>
-    BasicString<T>::BasicString(const double& value, int precision)
+    BasicString<T>::BasicString(const double& value, size_t precision)
     {
         BasicStringStream<T> stream;
         stream << ::std::fixed << ::std::setprecision(precision) << value;

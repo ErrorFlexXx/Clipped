@@ -6,6 +6,9 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 project(ClippedMaths VERSION 0.0.1 DESCRIPTION "Clipped Math library.")
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Public Header of this library (later copied to e.g. /usr/local/include/Project_Name/):
 set(${PROJECT_NAME}_PUBLIC_HEADER 
     include/${PROJECT_NAME}/cMath.h

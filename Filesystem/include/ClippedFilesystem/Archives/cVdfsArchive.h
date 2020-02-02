@@ -221,7 +221,7 @@ namespace Clipped
     private:
         BinFile file;                   //!< File handle to actually read/write to a file.
         VDFSHeader header;              //!< Header of the vdfs file.
-        uint32_t directoryOffsetCount;  //!< Counter for index writing. Offset to directory contents inside index.
+        size_t directoryOffsetCount;  //!< Counter for index writing. Offset to directory contents inside index.
         bool modified;                  //!< To be set if the index changes. finalize() will update it on archive closing.
 
         /**

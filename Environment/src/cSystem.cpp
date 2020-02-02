@@ -25,12 +25,8 @@
 #include <unistd.h>
 #include <cstring> //strerror
 #elif defined(WINDOWS)
-<<<<<<< HEAD
-#include <Windows.h>
-=======
 #include <windows.h>
 #include <psapi.h>
->>>>>>> master
 #endif
 
 using namespace Clipped;

@@ -115,7 +115,7 @@ namespace Clipped
          * @param pos to set the cursor at.
          * @return true, if set successfully, false otherwise.
          */
-        bool setPosition(long pos);
+        bool setPosition(size_t pos);
 
         /**
          * @brief setPostionToFileEnd sets the file pointer to the end of the file.
@@ -126,7 +126,7 @@ namespace Clipped
          * @brief getPosition gets the current cursor position in file.
          * @return the absolute cursor position.
          */
-        long getPosition();
+        size_t getPosition();
 
         /**
          * @brief seek moves the cursor relative to the current cursors position.

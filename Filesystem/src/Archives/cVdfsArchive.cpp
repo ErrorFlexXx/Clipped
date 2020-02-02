@@ -152,7 +152,7 @@ bool VDFSArchive::moveEntryDataToTheEnd(VdfsEntry*& entry)
     if(success) success = file.writeBytes(tmpData, entry->vdfs_size);
     if(success)
     {
-        entry->vdfs_offset = newOffset;
+        entry->vdfs_offset = static_cast<uint32_t>(newOffset);
     }
     delete[] tmpData;
     return success;
@@ -229,7 +229,7 @@ bool VDFSArchive::writeIndexTree(Tree<String, VdfsEntry>& tree)
     directoryOffsetCount += tree.countLocalElements();  //Count all files of this stage.
     directoryOffsetCount += tree.countLocalSubtrees();  //Count directory entries.
 
-    uint32_t subdirectoryOffsetCount = directoryOffsetCount;
+    size_t subdirectoryOffsetCount = directoryOffsetCount;
     for(auto& child : tree.childs) //Write directories.
     {
         if(writeSuccess) writeSuccess = file.writeString(child.first.fill(" ", EntryNameLength));
@@ -379,13 +379,13 @@ bool VDFSArchive::writeFile(FileEntry* fileEntry, const char* src, const size_t 
         LogError() << "Handle given, that wasn't created by an VDFSArchive instance!";
         return false;
     }
-    vdfsEntry->vdfs_size = length; //Enter size.
+    vdfsEntry->vdfs_size = static_cast<uint32_t>(length); //Enter size.
     size_t writeOffset = getFreeMemoryOffset(length);
     if(!file.setPosition(writeOffset)) return false;
     if(!file.writeBytes(src, length)) return false;
-    vdfsEntry->vdfs_offset = writeOffset;
+    vdfsEntry->vdfs_offset = static_cast<uint32_t>(writeOffset);
     vdfsEntry->vdfs_attribute = EntryAttribute::ARCHIVE;
-    header.contentSize += length;
+    header.contentSize += static_cast<uint32_t>(length);
 
     modified = true; //Update index on disk, if archive gets closed.
     return true;
@@ -411,7 +411,7 @@ bool VDFSArchive::removeFile(FileEntry* fileEntry)
         //Update header:
         modified = true; //Update index on disk, if archive gets closed.
         header.fileCount--;
-        header.contentSize -= sizeOfFile;
+        header.contentSize -= static_cast<uint32_t>(sizeOfFile);
         header.entryCount--;
     }
     return removed;

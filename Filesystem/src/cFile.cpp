@@ -164,7 +164,7 @@ bool File::copy(const Path& destination)
 
 bool File::isOpen() const { return file.is_open(); }
 
-bool File::setPosition(long pos)
+bool File::setPosition(size_t pos)
 {
     file.seekg(pos);
     return file.good();
@@ -176,9 +176,9 @@ bool File::setPostionToFileEnd()
     return file.good();
 }
 
-long File::getPosition()
+size_t File::getPosition()
 {
-    return static_cast<long>(file.tellg());
+    return static_cast<size_t>(file.tellg());
 }
 
 bool File::seek(long delta)
