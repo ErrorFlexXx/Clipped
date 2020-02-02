@@ -23,7 +23,6 @@
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
-
 #include <errno.h>
 
 namespace Clipped
@@ -34,9 +33,9 @@ namespace Clipped
     class SerialPort : public ISerialPort
     {
     public:
-        SerialPort(const String& interface, const Settings& settings);
+        SerialPort(const String& interfaceName, const Settings& settings);
 
-        virtual ~SerialPort();
+        virtual ~SerialPort() override;
 
         /**
          * @brief open opens the serial interface and configures it.

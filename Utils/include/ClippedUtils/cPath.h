@@ -113,13 +113,15 @@ namespace Clipped
         BasicPath<T>& setFilename(const BasicString<T>& rhs);
     };                                               // class BasicPath
 
-    // extern template class BasicPath<char>;
     using Path = BasicPath<char>;
     using WPath = BasicPath<wchar_t>;
     // TODO: Implement BasicString<T> toUtf16 and toUtf32 and corresponsing fromAscii methods
     //      to instanciate unicode variants U16Path and U32Path, if needed.
 
-    extern template class BasicPath<char>;  // extern instanciation declaration to prevent
-                                            // -Wundefined-var-template
+    //Tell the compiler what template instanciations are compiled (fixes -Wundefined-func-template)
+    extern template class BasicPath<char>;
+#ifdef CLIPPED_BUILD_WIDE
+    extern template class BasicPath<wchar_t>;
+#endif
 
 }  // namespace Clipped

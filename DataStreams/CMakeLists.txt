@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.9)
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON) # Export symbols on windows
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}) # Copy libs to exe path
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 project(ClippedDataStreams VERSION 0.0.1 DESCRIPTION "Clipped DataStreams library.")
 
