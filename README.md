@@ -1,4 +1,8 @@
-# Clipped
+# Clipped 
+
+Appveyor  (Windows and Linux on Debug and Release): [![Build status](https://ci.appveyor.com/api/projects/status/wfmymx0rithwj85l/branch/master?svg=true)](https://ci.appveyor.com/project/ChristianLpke/clipped/branch/master)
+
+Travis-Ci (Windows and Linux on Debug and Release): [![Build status](https://travis-ci.org/ErrorFlexXx/Clipped.svg?branch=master)](https://travis-ci.org/ErrorFlexXx/Clipped)
 
 The basic idea behind clipped is, that many applications need exactly the same support functions to get their work done.
 _Clipped_ is intended to be a multipurpose library, that delivers small libraries to support you by whatever application you write.

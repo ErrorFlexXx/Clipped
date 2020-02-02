@@ -10,13 +10,20 @@ project(ClippedFilesystem VERSION 0.0.1 DESCRIPTION "Clipped Filesystem library.
 set(${PROJECT_NAME}_PUBLIC_HEADER 
     include/${PROJECT_NAME}/cFile.h
     include/${PROJECT_NAME}/cBinFile.h
-    include/${PROJECT_NAME}/Archives/cVdfsFile.h
+    include/${PROJECT_NAME}/cTextFile.h
+    include/${PROJECT_NAME}/cConfigFile.h
+    include/${PROJECT_NAME}/cIArchiver.h
+    include/${PROJECT_NAME}/Archives/cVdfsArchive.h
 )
 
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME} ${CLIPPED_BUILD_TYPE}
+    ${${PROJECT_NAME}_PUBLIC_HEADER}
     src/cFile.cpp
     src/cBinFile.cpp
-    src/Archives/cVdfsFile.cpp
+    src/cTextFile.cpp
+    src/cConfigFile.cpp
+    src/cIArchiver.cpp
+    src/Archives/cVdfsArchive.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ClippedUtils)
@@ -39,6 +46,7 @@ include(GNUInstallDirs)
 
 install(TARGETS ${PROJECT_NAME}
     EXPORT ${PROJECT_NAME}Config
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/static
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}  # This is for Windows
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})

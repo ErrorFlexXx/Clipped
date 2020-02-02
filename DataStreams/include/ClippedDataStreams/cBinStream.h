@@ -140,4 +140,4 @@ namespace Clipped
         size_t index;             //!< Current index in data container.
         std::vector<char>& data;  //!< Data container used for this stream.
     };
-}  // namespace Utils
+}  // namespace Clipped

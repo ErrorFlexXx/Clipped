@@ -139,6 +139,6 @@ namespace Clipped
     protected:
         String interfaceName; //!< Name of the serial interface (e.g. /dev/ttyUSB0 on linux or COM0 on windows)
         Settings settings;//!< The serial port settings (baudrate, databits, parity, etc.)
-    };
+    }; //class ISerialPort
 
 } //namespace Clipped

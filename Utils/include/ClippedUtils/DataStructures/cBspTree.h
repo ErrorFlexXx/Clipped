@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <stdlib.h>
+
 namespace Clipped
 {
     // Forward declarations:
@@ -77,4 +79,4 @@ namespace Clipped
     {
         V leafData;  //!< Data stored in the leaf
     };
-}  // namespace Utils
+}  // namespace Clipped

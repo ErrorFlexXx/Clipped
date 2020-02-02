@@ -23,8 +23,14 @@
 #ifdef LINUX
 #include <stdlib.h>
 #include <unistd.h>
+#include <cstring> //strerror
 #elif defined(WINDOWS)
+<<<<<<< HEAD
 #include <Windows.h>
+=======
+#include <windows.h>
+#include <psapi.h>
+>>>>>>> master
 #endif
 
 using namespace Clipped;
@@ -111,7 +117,31 @@ MemorySize System::getTotalSystemMemory()
 }
 #endif
 
-size_t System::getTotalCpus() { return std::thread::hardware_concurrency(); }
+#ifdef LINUX
+MemorySize System::getCurrentProcessSystemMemory()
+{
+    long rss = 0L;
+    FILE* fp = NULL;
+    if ( (fp = fopen( "/proc/self/statm", "r" )) == NULL )
+        return (size_t)0L;      /* Can't open? */
+    if ( fscanf( fp, "%*s%ld", &rss ) != 1 )
+    {
+        fclose( fp );
+        return (size_t)0L;      /* Can't read? */
+    }
+    fclose( fp );
+    return (size_t)rss * (size_t)sysconf( _SC_PAGESIZE);
+}
+#elif defined(WINDOWS)
+MemorySize System::getCurrentProcessSystemMemory()
+{
+    PROCESS_MEMORY_COUNTERS info;
+    GetProcessMemoryInfo( GetCurrentProcess(), &info, sizeof(info) );
+    return (size_t)info.WorkingSetSize;
+}
+#endif
+
+int System::getTotalCpus() { return std::thread::hardware_concurrency(); }
 
 void System::mSleep(size_t milliseconds)
 {

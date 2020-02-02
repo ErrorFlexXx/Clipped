@@ -1,0 +1,29 @@
+image:
+  - Ubuntu
+  - Visual Studio 2017
+
+install:
+  - git submodule update --init --recursive
+
+before_build:
+  - cmake -DCLIPPED_BUILD_COMMUNICATION=ON -DCLIPPED_BUILD_DATASTREAMS=ON -DCLIPPED_BUILD_ECS=ON -DCLIPPED_BUILD_ENVIRONMENT=ON -DCLIPPED_BUILD_FILESYSTEM=ON -DCLIPPED_BUILD_MATHS=ON -DCLIPPED_BUILD_TESTS=ON .
+
+build:
+  project: $(APPVEYOR_BUILD_FOLDER)\$(APPVEYOR_PROJECT_NAME).sln
+  publish_wap: true
+  verbosity: minimal
+
+configuration:
+  - Debug
+  - Release
+
+for:
+-
+  matrix:
+    only:
+      - image: Ubuntu
+  build_script:
+  - make
+
+test_script:
+  - ctest --output-on-failure -C %CONFIGURATION%

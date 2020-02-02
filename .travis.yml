@@ -1,0 +1,48 @@
+language: cpp
+
+matrix:
+  fast_finish: true
+  include:
+    # g++-7 Debug build Linux
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - gcc-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - CONFIG=Debug
+      before_install:
+        - eval "${MATRIX_EVAL}"
+    # g++-7 Release build Linux
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - gcc-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - CONFIG=Release
+      before_install:
+        - eval "${MATRIX_EVAL}"
+    # Visual Studio Debug build Windows
+    - os: windows
+      env:
+        - CONFIG=Debug
+    # Visual Studio Release build Windows
+    - os: windows
+      env:
+        - CONFIG=Release
+
+script:
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE=${CONFIG} -DCLIPPED_BUILD_COMMUNICATION=ON -DCLIPPED_BUILD_DATASTREAMS=ON -DCLIPPED_BUILD_ECS=ON -DCLIPPED_BUILD_ENVIRONMENT=ON -DCLIPPED_BUILD_FILESYSTEM=ON -DCLIPPED_BUILD_MATHS=ON -DCLIPPED_BUILD_TESTS=ON ..
+  - cmake --build . --config ${CONFIG}
+  - ctest --output-on-failure -C ${CONFIG}

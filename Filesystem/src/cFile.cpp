@@ -15,6 +15,7 @@
  */
 
 #include "cFile.h"
+#include "cBinFile.h"
 #include <stdio.h>
 #include <ClippedUtils/cLogger.h>
 #include <ClippedUtils/cOsDetect.h>
@@ -122,12 +123,62 @@ bool File::touch(const bool override)
     return open(FileAccessMode::TRUNC, dataMode);  // And return the result.
 }
 
+bool File::copy(const Path& destination)
+{
+    bool closeAfterwards = false;
+    bool success = true;
+    if(!isOpen())
+    {
+        closeAfterwards = true;
+        if(!open(FileAccessMode::READ_ONLY, FileDataMode::BINARY))
+            return false;
+    }
+    BinFile copy(destination);
+    if(!copy.open(FileAccessMode::TRUNC))
+    {
+        LogError() << "Can't create file: " << destination;
+        success = false;
+    }
+    if(success)
+    {
+        char* buffer = new char[1024];
+        MemorySize i = 0;
+        MemorySize size = this->getSize();
+        for(i = 0; i + 1024 < size; i += 1024)
+        {
+            file.read(buffer, 1024);
+            copy.writeBytes(buffer, 1024);
+        }
+        size = size - (i); //Calculate left over size.
+        file.read(buffer, size); //Read rest of content.
+        copy.writeBytes(buffer, size); //Write remaining bytes.
+
+        delete[] buffer;
+        copy.close();
+    }
+
+    if(closeAfterwards)
+        file.close();
+    return success;
+}
+
 bool File::isOpen() const { return file.is_open(); }
 
 bool File::setPosition(long pos)
 {
-    file.seekg(pos, ios::beg);
-    return ((file.failbit | file.badbit) == 0);
+    file.seekg(pos);
+    return file.good();
+}
+
+bool File::setPostionToFileEnd()
+{
+    file.seekp(0, ios::end);
+    return file.good();
+}
+
+long File::getPosition()
+{
+    return static_cast<long>(file.tellg());
 }
 
 bool File::seek(long delta)

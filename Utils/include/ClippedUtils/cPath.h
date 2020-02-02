@@ -104,10 +104,13 @@ namespace Clipped
          */
         BasicPath<T>& operator+(const BasicString<T>& rhs);
 
-        static const BasicString<T> DELIM;           //!< Path delimitor
-        static const BasicString<T> WIN_DELIM;       //!< Path delimitor on windows.
-        static const BasicString<T> PATH_UP;         //!< Path UP
-        static const BasicString<T> FILE_EXT_DELIM;  //!< Delimiter of the file extension
+        /**
+         * @brief setFilename sets or overwrites the filename of this path.
+         *   The directory and file externsion part are kept.
+         * @param rhs the filename to set.
+         * @return reference to this object.
+         */
+        BasicPath<T>& setFilename(const BasicString<T>& rhs);
     };                                               // class BasicPath
 
     using Path = BasicPath<char>;

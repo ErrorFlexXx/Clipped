@@ -21,19 +21,11 @@
 using namespace std;
 using namespace Clipped;
 
-#define PATH_CURRENT_DIR FILE_EXT_DELIM
-
-template <class T>
-const BasicString<T> BasicPath<T>::DELIM = BasicString<T>::fromAsci("/");
-
-template <class T>
-const BasicString<T> BasicPath<T>::WIN_DELIM = BasicString<T>::fromAsci("\\");
-
-template <class T>
-const BasicString<T> BasicPath<T>::PATH_UP = BasicString<T>::fromAsci("..");
-
-template <class T>
-const BasicString<T> BasicPath<T>::FILE_EXT_DELIM = BasicString<T>::fromAsci(".");
+#define DELIM               BasicPath<T>::fromAsci("/")
+#define WIN_DELIM           BasicPath<T>::fromAsci("\\")
+#define PATH_UP             BasicPath<T>::fromAsci("..")
+#define PATH_CURRENT_DIR    BasicPath<T>::fromAsci(".")
+#define FILE_EXT_DELIM      BasicPath<T>::fromAsci(".")
 
 template <class T>
 BasicPath<T>::BasicPath() : BasicString<T>()
@@ -131,6 +123,20 @@ template <class T>
 BasicPath<T>& BasicPath<T>::operator+(const BasicString<T>& rhs)
 {
     this->append(rhs);
+    return *this;
+}
+
+template <class T>
+BasicPath<T>& BasicPath<T>::setFilename(const BasicString<T>& rhs)
+{
+    BasicString<T> newPath;
+    if(!getDirectory().empty())
+        newPath += getDirectory() + DELIM;
+    newPath += rhs;
+    if(!getExtension().empty())
+        newPath += FILE_EXT_DELIM + getExtension();
+
+    *this = newPath;
     return *this;
 }
 

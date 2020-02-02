@@ -98,6 +98,13 @@ namespace Clipped
         bool touch(const bool override = false);
 
         /**
+         * @brief copy creates a copy of this file.
+         * @param destination filepath of the new file.
+         * @return true, if the copy has been created successfully.
+         */
+        bool copy(const Path& destination);
+
+        /**
          * @brief isOpen checks wether the file is currently opened.
          * @return true if opened, false otherwise.
          */
@@ -109,6 +116,17 @@ namespace Clipped
          * @return true, if set successfully, false otherwise.
          */
         bool setPosition(long pos);
+
+        /**
+         * @brief setPostionToFileEnd sets the file pointer to the end of the file.
+         * @return true, if positioned successfully.
+         */
+        bool setPostionToFileEnd();
+        /**
+         * @brief getPosition gets the current cursor position in file.
+         * @return the absolute cursor position.
+         */
+        long getPosition();
 
         /**
          * @brief seek moves the cursor relative to the current cursors position.
@@ -129,4 +147,4 @@ namespace Clipped
         FileDataMode dataMode;      //!< Data mode for this file instance.
         std::fstream file;          //!< Actual filestream.
     };
-}  // namespace Utils
+}  // namespace Clipped

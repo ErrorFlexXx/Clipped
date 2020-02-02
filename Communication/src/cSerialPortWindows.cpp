@@ -122,8 +122,8 @@ bool SerialPort::config()
 
     switch (settings.stopBits)
     {
-    case StopBits1: serialParams.StopBits = ONESTOPBIT; break;
-    case StopBits2: serialParams.StopBits = TWOSTOPBITS; break;
+        case StopBits1: serialParams.StopBits = ONESTOPBIT; break;
+        case StopBits2: serialParams.StopBits = TWOSTOPBITS; break;
     }
 
     switch (settings.parity)

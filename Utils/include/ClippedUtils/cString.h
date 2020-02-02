@@ -73,6 +73,20 @@ namespace Clipped
         BasicString(const float& value);
 
         /**
+         * @brief BasicString creates a string representing the float value with given precision.
+         * @param value the float to display.
+         * @param precision number of digits behind the comma.
+         */
+        BasicString(const float& value, int precision);
+
+        /**
+         * @brief BasicString creates a string representing the double value with given precision.
+         * @param value the double to display.
+         * @param precision number of digits behind the comma.
+         */
+        BasicString(const double& value, int precision);
+
+        /**
          * @brief BasicString creates a string representing the int value.
          * @param value number to initialize from.
          */
@@ -113,6 +127,14 @@ namespace Clipped
          * @return a vector containing chars.
          */
         std::vector<char> toVector() const;
+
+        /**
+         * @brief toHexString creates a hexadecimal representation of the string.
+         * @param uppercase if true, Hex letters are displayed uppercase.
+         * @param delimiter to be put between the 8bit numbers.
+         * @return the hex representation as string.
+         */
+        BasicString<T> toHexString(bool uppercase, const BasicString<T> delimiter = " ") const;
 
         /**
          * @brief fromAsci sets this string from an ascii input.
