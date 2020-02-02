@@ -80,7 +80,7 @@ namespace Clipped
     {
         BasicStringStream<T> stream;
         stream << ::std::fixed << ::std::setprecision(precision) << value;
-        *this = fromAsci(stream.str().c_str());
+        *this = stream.str();
     }
 
     template <class T>
@@ -88,7 +88,7 @@ namespace Clipped
     {
         BasicStringStream<T> stream;
         stream << ::std::fixed << ::std::setprecision(precision) << value;
-        *this = fromAsci(stream.str().c_str());
+        *this = stream.str();
     }
 
     template <class T>
@@ -211,9 +211,10 @@ namespace Clipped
         if(uppercase)
             stream << std::uppercase;
 
+        BasicString<T> fillchar = BasicString<T>::fromAsci("0");
         for(const T& c : *this)
         {
-            stream << ::std::hex << ::std::setfill('0') << ::std::setw(2) << (unsigned int)c << delimiter;
+            stream << ::std::hex << ::std::setfill(fillchar.at(0)) << ::std::setw(2) << (unsigned int)c << delimiter;
         }
         BasicString<T> returned = stream.str();
         if(!returned.empty())
@@ -374,7 +375,7 @@ namespace Clipped
         }
         else if(endpos == BasicString<T>::npos && firstpos == BasicString<T>::npos)
         {
-            return "";
+            return BasicString<T>(); //Return empty string.
         }
         return *this;
     }
@@ -430,10 +431,10 @@ namespace Clipped
     // Please compile template class for the following types:
     template class BasicString<char>;
     template class BasicStringStream<char>;
-#ifdef CLIPPED_BUILD_WIDE
+
     template class BasicString<wchar_t>;
     template class BasicStringStream<wchar_t>;
-#endif
+
 #ifdef CLIPPED_BUILD_U16
     template class BasicString<char16_t>;
     template class BasicStringStream<char16_t>;
@@ -488,6 +489,8 @@ namespace std
         // Workaround for VS - unresolved external symbols of codecvt.
         // They forgot std::locale::id for char16_t and char32_t, but not for int32_t
 #if (_MSC_VER >= 1900 /* VS 2015*/) && (_MSC_VER <= 1916 /* VS 2017 */)
+        (void)pos; //Silence unused warnings. They're used in non msvc implementations below.
+        (void)base;
         ::std::wstring_convert<::std::codecvt_utf8_utf16<int32_t>, int32_t> convert;
         auto p = reinterpret_cast<const int32_t*>(str.data());
         return ::std::stol(convert.to_bytes(p, p + str.size()));

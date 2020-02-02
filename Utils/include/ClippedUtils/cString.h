@@ -48,7 +48,7 @@ namespace Clipped
 
         /**
          * @brief BasicString constructs a BasicString object from an const ptr initializer.
-         * @param (in) s string to initialize this String objects with.
+         * @param s pointer to char type to build String from.
          */
         BasicString(const T* s);
 
@@ -249,7 +249,6 @@ namespace Clipped
 
         /**
          * @brief trimRight trims the given char from the right side of the string.
-         * @param trimChar char that gets trimmed.
          * @return the trimmed string copy.
          */
         BasicString<T> trimRight() const;
@@ -284,6 +283,20 @@ namespace Clipped
     using U16String = BasicString<char16_t>;  // 16-Bit Unicode String.
     using U32String = BasicString<char32_t>;  // 32-Bit Unicode String.
 
+    //Forward declarations of template specializations:
+    template <>
+    BasicString<char> BasicString<char>::toString() const;
+    template <>
+    BasicString<char> BasicString<wchar_t>::toString() const;
+    template <>
+    BasicString<wchar_t> BasicString<char>::toWString() const;
+    template <>
+    BasicString<wchar_t> BasicString<wchar_t>::toWString() const;
+    template <>
+    BasicString<char> BasicString<char>::fromAsci(const char* str);
+    template <>
+    BasicString<wchar_t> BasicString<wchar_t>::fromAsci(const char* str);
+
     template <class T>
     class BasicStringStream
         : public std::basic_stringstream<T, std::char_traits<T>, std::allocator<T>>
@@ -301,10 +314,10 @@ namespace Clipped
     //Tell the compiler what template instanciations are compiled (fixes -Wundefined-func-template)
     extern template class BasicString<char>;
     extern template class BasicStringStream<char>;
-#ifdef CLIPPED_BUILD_WIDE
+
     extern template class BasicString<wchar_t>;
     extern template class BasicStringStream<wchar_t>;
-#endif
+
 #ifdef CLIPPED_BUILD_U16
     extern template class BasicString<char16_t>;
     extern template class BasicStringStream<char16_t>;
