@@ -327,6 +327,7 @@ bool VDFSArchive::create()
     header.entrySize = 80;
     memoryManager.alloc(0, header.rootOffset); //Mark header region as used.
     modified = true;
+    return result;
 }
 
 bool VDFSArchive::close()
