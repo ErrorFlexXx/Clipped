@@ -902,7 +902,7 @@ namespace Clipped
                 T d;  //!< The k component.
             };
         };
-    };
+    }; //class Quaternion
 
     using Quat4f = Quaternion<float>;
 

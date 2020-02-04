@@ -19,7 +19,7 @@ int main(void)
 
     LogInfo() << "Call vdfsArchiver.open";
     status &= vdfsArchiver.open();
-
+    LogDebug() << vdfsArchiver.getHeader().toString();
     status &= checkFilesExist(vdfsArchiver);
     status &= checkFilesDoesntExist(vdfsArchiver);
     status &= addAFile(vdfsArchiver);
@@ -63,7 +63,7 @@ bool checkFilesExist(VDFSArchive& archive)
             result = false;
         }
     }
-
+    LogInfo() << "VDFS Dispersion ratio (0.0 is best): " << archive.getDispersionRatio();
     return result;
 }
 
@@ -115,6 +115,7 @@ bool addAFile(VDFSArchive& archive)
         }
         auto newFile = addAFileArchive.createFile(addTestFilename);
         addAFileArchive.writeFile(newFile, data.data(), data.size());
+        LogInfo() << "VDFS Dispersion ratio (0.0 is best): " << archive.getDispersionRatio();
         if(!addAFileArchive.close())
         {
             LogError() << "VDFS Closing failed!";
@@ -201,6 +202,7 @@ bool removeAFile(VDFSArchive& archive)
             LogError() << "Vdfs removeFile failed!";
             return false;
         }
+        LogInfo() << "VDFS Dispersion ratio (0.0 is best): " << removeFileArchive.getDispersionRatio();
         if(!removeFileArchive.close())
         {
             LogError() << "VDFS Closing failed!";

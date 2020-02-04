@@ -111,7 +111,15 @@ namespace Clipped
          * @return reference to this object.
          */
         BasicPath<T>& setFilename(const BasicString<T>& rhs);
-    };                                               // class BasicPath
+
+        /**
+         * @brief wildcardMatch matchs path with a wildcard pattern string.
+         * @param pattern wildcard string with asterisk as wildcard.
+         * @return true, if the pattern matchs with this path.
+         */
+        bool wildcardMatch(const BasicString<T>& pattern) const;
+
+    }; // class BasicPath
 
     // extern template class BasicPath<char>;
     using Path = BasicPath<char>;

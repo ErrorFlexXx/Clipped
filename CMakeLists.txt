@@ -63,6 +63,7 @@ if(CLIPPED_BUILD_TESTS)
     enable_testing()
     add_subdirectory(Utils/tests)
     add_subdirectory(Filesystem/tests)
+    add_subdirectory(Maths/tests)
 endif()
 
 # Do not forget to target_link_libraries against ClippedUtils ClippedFilesystem ...

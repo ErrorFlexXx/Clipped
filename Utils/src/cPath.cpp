@@ -140,6 +140,29 @@ BasicPath<T>& BasicPath<T>::setFilename(const BasicString<T>& rhs)
     return *this;
 }
 
+template <class T>
+bool BasicPath<T>::wildcardMatch(const BasicString<T>& pattern) const
+{
+    BasicString<T> match = *this; //Work copy to cut off matched parts.
+
+    const auto parts = pattern.split('*');
+    const bool endsWithWildcard = pattern.endsWith("*");
+
+    for(const auto part : parts)
+    {
+        auto index = match.find(part);
+        if(index != BasicPath<T>::npos)
+        {
+            match = match.substr(index + part.size()); //Keep rest of
+        }
+        else //Required part not found.
+        {
+            return false; //path doesn't match the pattern.
+        }
+    }
+    return match.empty() | endsWithWildcard;
+}
+
 // Please compile template class for the following types:
 namespace Clipped
 {
