@@ -484,7 +484,7 @@ size_t VDFSArchive::readIndexTree(Tree<String, VdfsEntry>& tree)
                 tree.addElement(entry.path, entry);
                 if(!memoryManager.alloc(entry.vdfs_offset, entry.vdfs_size)) //Mark storage as used.
                 {
-                    LogWarn() << "VDFS Index corrupt! Index pointing to same memory for multiple items!";
+                    LogWarn() << "VDFS Index corrupt! File: " << entry.vdfs_name << " offset: " << entry.vdfs_offset << " already used!";
                 }
             }
 
@@ -518,11 +518,11 @@ bool VDFSArchive::writeIndexTree(Tree<String, VdfsEntry>& tree)
     {
         uint32_t entryType = EntryType::DIRECTORY;
         if(writeSuccess) writeSuccess = file.writeString(child.first.fill(" ", EntryNameLength));
-        if(writeSuccess) writeSuccess = file.write(subdirectoryOffsetCount);
+        if(writeSuccess) writeSuccess = file.write((uint32_t) subdirectoryOffsetCount);
         if(writeSuccess) writeSuccess = file.write((uint32_t) 0); //Size
         if(i++ == entriesOfStage) //Last element of this stage ?
             entryType |= EntryType::LAST;
-        if(writeSuccess) writeSuccess = file.write(entryType);
+        if(writeSuccess) writeSuccess = file.write((uint32_t) entryType);
         if(writeSuccess) writeSuccess = file.write((uint32_t) 0); //Attribute
 
         subdirectoryOffsetCount += child.second.countChildsAndElements();
