@@ -65,7 +65,7 @@ void CRC<T>::calculateTable()
 
         for(unsigned char bit = 0; bit < 8; bit++)
         {
-            if((currentByte & ((T)1 << (sizeof(T) * 8) - 1)) != 0)
+            if((currentByte & ((T)1 << ((sizeof(T) * 8) - 1))) != 0)
             {
                 currentByte <<= 1;
                 currentByte ^= generator;
