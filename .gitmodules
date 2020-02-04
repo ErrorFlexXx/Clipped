@@ -1,3 +1,0 @@
-[submodule "Communication/lib/readerwriterqueue"]
-	path = Communication/lib/readerwriterqueue
-	url = https://github.com/cameron314/readerwriterqueue.git

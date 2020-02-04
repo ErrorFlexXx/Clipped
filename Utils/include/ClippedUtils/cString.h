@@ -1,18 +1,29 @@
-/* Copyright 2019 Christian Löpke
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+/*
+** Clipped -- a Multipurpose C++ Library.
+**
+** Copyright (C) 2019-2020 Christian Löpke. All rights reserved.
+**
+** Permission is hereby granted, free of charge, to any person obtaining
+** a copy of this software and associated documentation files (the
+** "Software"), to deal in the Software without restriction, including
+** without limitation the rights to use, copy, modify, merge, publish,
+** distribute, sublicense, and/or sell copies of the Software, and to
+** permit persons to whom the Software is furnished to do so, subject to
+** the following conditions:
+**
+** The above copyright notice and this permission notice shall be
+** included in all copies or substantial portions of the Software.
+**
+** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+** MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+** IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+** CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+** TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+** SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+**
+** [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
+*/
 
 #pragma once
 
@@ -37,7 +48,7 @@ namespace Clipped
 
         /**
          * @brief BasicString constructs a BasicString object from an const ptr initializer.
-         * @param (in) s string to initialize this String objects with.
+         * @param s pointer to char type to build String from.
          */
         BasicString(const T* s);
 
@@ -77,14 +88,14 @@ namespace Clipped
          * @param value the float to display.
          * @param precision number of digits behind the comma.
          */
-        BasicString(const float& value, int precision);
+        BasicString(const float& value, size_t precision);
 
         /**
          * @brief BasicString creates a string representing the double value with given precision.
          * @param value the double to display.
          * @param precision number of digits behind the comma.
          */
-        BasicString(const double& value, int precision);
+        BasicString(const double& value, size_t precision);
 
         /**
          * @brief BasicString creates a string representing the int value.
@@ -238,7 +249,6 @@ namespace Clipped
 
         /**
          * @brief trimRight trims the given char from the right side of the string.
-         * @param trimChar char that gets trimmed.
          * @return the trimmed string copy.
          */
         BasicString<T> trimRight() const;
@@ -273,6 +283,20 @@ namespace Clipped
     using U16String = BasicString<char16_t>;  // 16-Bit Unicode String.
     using U32String = BasicString<char32_t>;  // 32-Bit Unicode String.
 
+    //Forward declarations of template specializations:
+    template <>
+    BasicString<char> BasicString<char>::toString() const;
+    template <>
+    BasicString<char> BasicString<wchar_t>::toString() const;
+    template <>
+    BasicString<wchar_t> BasicString<char>::toWString() const;
+    template <>
+    BasicString<wchar_t> BasicString<wchar_t>::toWString() const;
+    template <>
+    BasicString<char> BasicString<char>::fromAsci(const char* str);
+    template <>
+    BasicString<wchar_t> BasicString<wchar_t>::fromAsci(const char* str);
+
     template <class T>
     class BasicStringStream
         : public std::basic_stringstream<T, std::char_traits<T>, std::allocator<T>>
@@ -286,6 +310,22 @@ namespace Clipped
     using WStringStream = BasicStringStream<wchar_t>;
     using U16StringStream = BasicStringStream<char16_t>;
     using U32StringStream = BasicStringStream<char32_t>;
+
+    //Tell the compiler what template instanciations are compiled (fixes -Wundefined-func-template)
+    extern template class BasicString<char>;
+    extern template class BasicStringStream<char>;
+
+    extern template class BasicString<wchar_t>;
+    extern template class BasicStringStream<wchar_t>;
+
+#ifdef CLIPPED_BUILD_U16
+    extern template class BasicString<char16_t>;
+    extern template class BasicStringStream<char16_t>;
+#endif
+#ifdef CLIPPED_BUILD_U32
+    extern template class BasicString<char32_t>;
+    extern template class BasicStringStream<char32_t>;
+#endif
 
 }  // namespace Clipped
 

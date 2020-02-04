@@ -1,18 +1,29 @@
-/* Copyright 2019 Christian Löpke
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+/*
+** Clipped -- a Multipurpose C++ Library.
+**
+** Copyright (C) 2019-2020 Christian Löpke. All rights reserved.
+**
+** Permission is hereby granted, free of charge, to any person obtaining
+** a copy of this software and associated documentation files (the
+** "Software"), to deal in the Software without restriction, including
+** without limitation the rights to use, copy, modify, merge, publish,
+** distribute, sublicense, and/or sell copies of the Software, and to
+** permit persons to whom the Software is furnished to do so, subject to
+** the following conditions:
+**
+** The above copyright notice and this permission notice shall be
+** included in all copies or substantial portions of the Software.
+**
+** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+** MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+** IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+** CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+** TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+** SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+**
+** [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
+*/
 
 #include "cString.h"
 #include <algorithm>
@@ -65,19 +76,19 @@ namespace Clipped
     }
 
     template <class T>
-    BasicString<T>::BasicString(const float& value, int precision)
+    BasicString<T>::BasicString(const float& value, size_t precision)
     {
         BasicStringStream<T> stream;
         stream << ::std::fixed << ::std::setprecision(precision) << value;
-        *this = fromAsci(stream.str().c_str());
+        *this = stream.str();
     }
 
     template <class T>
-    BasicString<T>::BasicString(const double& value, int precision)
+    BasicString<T>::BasicString(const double& value, size_t precision)
     {
         BasicStringStream<T> stream;
         stream << ::std::fixed << ::std::setprecision(precision) << value;
-        *this = fromAsci(stream.str().c_str());
+        *this = stream.str();
     }
 
     template <class T>
@@ -200,9 +211,10 @@ namespace Clipped
         if(uppercase)
             stream << std::uppercase;
 
+        BasicString<T> fillchar = BasicString<T>::fromAsci("0");
         for(const T& c : *this)
         {
-            stream << ::std::hex << ::std::setfill('0') << ::std::setw(2) << (unsigned int)c << delimiter;
+            stream << ::std::hex << ::std::setfill(fillchar.at(0)) << ::std::setw(2) << (unsigned int)c << delimiter;
         }
         BasicString<T> returned = stream.str();
         if(!returned.empty())
@@ -363,7 +375,7 @@ namespace Clipped
         }
         else if(endpos == BasicString<T>::npos && firstpos == BasicString<T>::npos)
         {
-            return "";
+            return BasicString<T>(); //Return empty string.
         }
         return *this;
     }
@@ -419,10 +431,10 @@ namespace Clipped
     // Please compile template class for the following types:
     template class BasicString<char>;
     template class BasicStringStream<char>;
-#ifdef CLIPPED_BUILD_WIDE
+
     template class BasicString<wchar_t>;
     template class BasicStringStream<wchar_t>;
-#endif
+
 #ifdef CLIPPED_BUILD_U16
     template class BasicString<char16_t>;
     template class BasicStringStream<char16_t>;
@@ -477,6 +489,8 @@ namespace std
         // Workaround for VS - unresolved external symbols of codecvt.
         // They forgot std::locale::id for char16_t and char32_t, but not for int32_t
 #if (_MSC_VER >= 1900 /* VS 2015*/) && (_MSC_VER <= 1916 /* VS 2017 */)
+        (void)pos; //Silence unused warnings. They're used in non msvc implementations below.
+        (void)base;
         ::std::wstring_convert<::std::codecvt_utf8_utf16<int32_t>, int32_t> convert;
         auto p = reinterpret_cast<const int32_t*>(str.data());
         return ::std::stol(convert.to_bytes(p, p + str.size()));

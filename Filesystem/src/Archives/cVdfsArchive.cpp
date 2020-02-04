@@ -1,18 +1,29 @@
-/* Copyright 2019 Christian Löpke
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+/*
+** Clipped -- a Multipurpose C++ Library.
+**
+** Copyright (C) 2019-2020 Christian Löpke. All rights reserved.
+**
+** Permission is hereby granted, free of charge, to any person obtaining
+** a copy of this software and associated documentation files (the
+** "Software"), to deal in the Software without restriction, including
+** without limitation the rights to use, copy, modify, merge, publish,
+** distribute, sublicense, and/or sell copies of the Software, and to
+** permit persons to whom the Software is furnished to do so, subject to
+** the following conditions:
+**
+** The above copyright notice and this permission notice shall be
+** included in all copies or substantial portions of the Software.
+**
+** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+** MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+** IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+** CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+** TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+** SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+**
+** [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
+*/
 
 #include "Archives/cVdfsArchive.h"
 #include <ClippedUtils/cLogger.h>
@@ -420,7 +431,7 @@ bool VDFSArchive::moveEntryDataToTheEnd(VdfsEntry*& entry)
     if(success) success = file.writeBytes(tmpData, entry->vdfs_size);
     if(success)
     {
-        entry->vdfs_offset = newOffset;
+        entry->vdfs_offset = static_cast<uint32_t>(newOffset);
     }
     delete[] tmpData;
     return success;
@@ -502,7 +513,7 @@ bool VDFSArchive::writeIndexTree(Tree<String, VdfsEntry>& tree)
     const size_t entriesOfStage = tree.countLocalElements() + tree.countLocalSubtrees();
     directoryOffsetCount += entriesOfStage;  //Add entries of this stage to global counter.
 
-    uint32_t subdirectoryOffsetCount = directoryOffsetCount; //Total entries of this stage
+    size_t subdirectoryOffsetCount = directoryOffsetCount; //Total entries of this stage
     for(auto& child : tree.childs) //Write directories.
     {
         uint32_t entryType = EntryType::DIRECTORY;
@@ -654,13 +665,13 @@ bool VDFSArchive::writeFile(FileEntry* fileEntry, const char* src, const size_t 
         LogError() << "Handle given, that wasn't created by an VDFSArchive instance!";
         return false;
     }
-    vdfsEntry->vdfs_size = length; //Enter size.
+    vdfsEntry->vdfs_size = static_cast<uint32_t>(length); //Enter size.
     size_t writeOffset = getFreeMemoryOffset(length);
     if(!file.setPosition(writeOffset)) return false;
     if(!file.writeBytes(src, length)) return false;
-    vdfsEntry->vdfs_offset = writeOffset;
+    vdfsEntry->vdfs_offset = static_cast<uint32_t>(writeOffset);
     vdfsEntry->vdfs_attribute = EntryAttribute::ARCHIVE;
-    header.contentSize += length;
+    header.contentSize += static_cast<uint32_t>(length);
 
     modified = true; //Update index on disk, if archive gets closed.
     return true;
