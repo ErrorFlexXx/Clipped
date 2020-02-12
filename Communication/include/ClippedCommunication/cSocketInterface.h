@@ -1,41 +1,28 @@
 #pragma once
 
 #include "cIODevice.h"
+#include <ClippedUtils/cString.h>
 
 namespace Clipped
 {
     /**
-     * @brief The SocketInterface class parent class of sockets.
+     * @brief The SocketType enum contains available types of sockets.
      */
+    enum SocketType
+    {
+        UDP = 0,    //!< An UDP Socket.
+        TCP         //!< An TCP Socket.
+    };
+
+    const String IPv4Regex("^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\\.(?!$)|$)){4}$"); //!< Regex to check for an IPv4 Address.
+
     class SocketInterface
     {
     public:
         virtual ~SocketInterface() {}
 
-        /**
-         * @brief The SocketType enum contains available types of sockets.
-         */
-        enum SocketType
-        {
-            UDP = 0,    //!< An UDP Socket.
-            TCP         //!< An TCP Socket.
-        };
+    protected:
+        bool isIPv4; //!< Flag stating, if the socket is in IPv4 mode.
+    };
 
-        /**
-         * @brief The AddressFamily enum contains availble address families.
-         */
-        enum AddressFamily
-        {
-            IPv4 = 0,   //!< IPv4 connection.
-            IPv6        //!< IPv6 connection.
-        };
-    }; //class SocketInterface
-
-    /**
-     * @brief The SocketPeerInterface class has to be implemented from
-     *  platform SocketPeer classes to get a working Peer communication.
-     */
-    class SocketPeerInterface : public IODevice
-    {
-    }; //class SocketPeer
 } //namespace Clipped

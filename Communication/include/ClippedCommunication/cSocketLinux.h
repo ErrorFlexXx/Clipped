@@ -9,6 +9,16 @@
 
 namespace Clipped
 {
+    class SocketAddress
+    {
+    public:
+        union
+        {
+            sockaddr_in ipv4Addr;   //!< IPv4 address type.
+            sockaddr_in6 ipv6Addr;  //!< IPv6 address type.
+        };
+    };
+
     /**
      * @brief The Socket class implements network sockets UDP/TCP.
      */
@@ -20,7 +30,7 @@ namespace Clipped
          * @param sockType to create the socket for (TCP/UDP).
          * @param addrFamily to create the socket for (IPv4/IPv6).
          */
-        Socket(const SocketType sockType, const AddressFamily& addrFamily);
+        Socket(const SocketType sockType);
 
         /**
          * @brief listen sets the socket to listening mode, waiting for connections.
@@ -29,12 +39,6 @@ namespace Clipped
          * @return true, if the socket has been set to listening successfully.
          */
         bool listen(const Clipped::String& listeningAddress, const int listenPort);
-
-        /**
-         * @brief accept waits for an incoming connection.
-         * @return tbd.
-         */
-        bool accept();
 
         /**
          * @brief connect connects the socket to a server.
@@ -59,19 +63,12 @@ namespace Clipped
     private:
         Clipped::String address;    //!< Address this socket works with (either listening or connecting to).
         SocketType socketType;      //!< Type of this socket (UDP/TCP).
-        AddressFamily addressFamily;//!< Address family (IPv4/IPv6).
         int port;                   //!< Port this socket acts on.
+        SocketAddress remoteAddress;//!< The address of the remote.
+        SocketAddress myAddress;    //!< The address of this socket.
         //Unix specific:
         int sockfd;                 //!< Socket file descriptor.
-        int unixAddressFamily;      //!< Unix value for the address family.
         int unixSocketType;         //!< Unix value for the socket type.
-        sockaddr* myFamilyAddress;  //!< Current pointer to my address of general type sock_addr.
-        sockaddr* myFamilyRemote;   //!< Current pointer to remote address of general type sock_addr.
-        sockaddr_in myAddress;      //!< Address of this socket.
-        sockaddr_in6 myAddress6;    //!< Address of this socket (IPv6).
-        sockaddr_in remoteAddress;  //!< Address of remote end.
-        sockaddr_in6 remoteAddress6;//!< Address of the remote end (IPv6).
-        static Clipped::String IPv4Regex; //!< Regex to check for an IPv4 Address.
 
         /**
          * @brief getLinuxAddressFamily converts Clipped AddressFamily identifier to unix int.
@@ -105,33 +102,10 @@ namespace Clipped
 
         /**
          * @brief setupSocket creates and configures the protocol/type of the socket.
+         * @param addressFamily address family type to use (IPv4: AF_INET or IPv6: AF_INET6)
          * @return true, if created and configured successfully.
          */
-        bool setupSocket();
+        bool setupSocket(int addressFamily);
     }; //class Socket
 
-    class SocketPeer : public SocketPeerInterface
-    {
-    public:
-        SocketPeer();
-
-        virtual bool open(const IODevice::OpenMode& mode) override;
-
-        virtual bool readAll(std::vector<char>& data) override;
-
-        virtual bool read(std::vector<char>& data, size_t count) override;
-
-        virtual bool write(const String& data) override;
-
-        virtual bool write(const std::vector<char>& data) override;
-
-        virtual bool close() override;
-
-    private:
-        //Allow Socket to setup privates of this SocketPeer.
-        friend class Socket;
-
-        int fd;                 //!< File descriptor identifying the socket.
-        sockaddr_in address;    //!< Address of the socket peer.
-    }; //class SocketPeer
 } //namespace Clipped

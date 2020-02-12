@@ -1,18 +1,17 @@
 #include "cSocketLinux.h"
 #include <ClippedUtils/cLogger.h>
 #include <arpa/inet.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <regex>
 
 using namespace Clipped;
 
-String Socket::IPv4Regex = "^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\\.(?!$)|$)){4}$";
-
 //=====   Socket   =====//
 
-Socket::Socket(const SocketType sockType, const AddressFamily& addrFamily)
+Socket::Socket(const SocketType sockType)
     : address("")
     , socketType(sockType)
-    , addressFamily(addrFamily)
     , port(0)
     , sockfd(0)
     , myAddress{0}
@@ -23,91 +22,72 @@ bool Socket::listen(const String& listeningAddress, const int listenPort)
 {
     address = listeningAddress;
     port = listenPort;
-    bool result = setupSocket();
 
-    if(result)
+    //Detect if an IPv4 or IPv6 address is requested.
+    if(std::regex_match(listeningAddress, std::regex(IPv4Regex)))
     {
-        if(AddressFamily::IPv4 == addressFamily)
+        LogDebug() << "Socket set to IPv4 mode.";
+        isIPv4 = true;
+        if(!toIPv4(address, myAddress.ipv4Addr.sin_addr))
         {
-            myAddress = {0};
-            myAddress.sin_family = unixAddressFamily;
-            myAddress.sin_port = htons(listenPort);
-            if(!toIPv4(address, myAddress.sin_addr))
-            {
-                LogError() << "Invalid IPv4 address: " << address;
-                return false;
-            }
-        }
-        else if(AddressFamily::IPv6 == addressFamily)
-        {
-            myAddress6 = {0};
-            myAddress6.sin6_family = unixAddressFamily;
-            myAddress6.sin6_port = htons(listenPort);
-            if(!toIPv6(address, myAddress6.sin6_addr))
-            {
-                LogError() << "Invalid IPv6 address: " << address;
-                return false;
-            }
-        }
-        else
-        {
-            LogError() << "Unsupported address family!";
+            LogError() << "Invalid IPv4 address detected: " << address;
             return false;
         }
-        //Address setup complete, if we get here.
-        if(0 > bind(sockfd, (struct sockaddr*) &myAddress, sizeof(sockaddr)))
+
+        myAddress.ipv4Addr.sin_family = AF_INET;
+        myAddress.ipv4Addr.sin_port = htons(port);
+
+        if(!setupSocket(AF_INET)) //Setup IPv4 socket.
         {
-            LogError() << "Can't bind socket!";
+            LogError() << "Socket setup failed!";
             return false;
         }
-        ::listen(sockfd, 5); //Queue size 5: Maximum value on most systems.
-    }
-    else
+        if(0 != ::bind(sockfd, reinterpret_cast<sockaddr*>(&myAddress.ipv4Addr), sizeof(myAddress.ipv4Addr)))
+        {
+            LogError() << "Socket bind failed: " << strerror(errno);
+            return false;
+        }
+    } //IPv4 end.
+    else //IPv6 mode.
     {
-        LogError() << "Setup failed due to bad parameters!";
-        return result;
-    }
-    return result;
-}
+        LogDebug() << "Socket set to IPv6 mode.";
+        this->isIPv4 = false;
+        if(!toIPv6(address, myAddress.ipv6Addr.sin6_addr))
+        {
+            LogError() << "Invalid IPv6 address detected: " << address;
+            return false;
+        }
+        myAddress.ipv6Addr.sin6_port = htons(port);
+        myAddress.ipv6Addr.sin6_family = AF_INET6;
+        if(!setupSocket(AF_INET6)) //Setup IPv6 socket.
+        {
+            LogError() << "Socket setup failed!";
+            return false;
+        }
+        if(0 != ::bind(sockfd, reinterpret_cast<sockaddr*>(&myAddress.ipv6Addr), sizeof(myAddress.ipv6Addr)))
+        {
+            LogError() << "Socket bind failed!" << strerror(errno);
+            return false;
+        }
+    } //IPv6 end.
 
-bool Socket::connect(const String& connectAddress, const int connectPort)
-{
-    address = connectAddress;
-    port = connectPort;
-    bool result = setupSocket();
-
-    if(result)
+    //All modes:
+    if(SocketType::UDP != socketType)
     {
-
+        if(-1 == ::listen(sockfd, 5)) //5 , the maximum value on most systems.
+        {
+            LogError() << "Socket listen failed: " << strerror(errno);
+            return false;
+        }
     }
-    else
-    {
-        LogError() << "Setup failed due to bad parameters!";
-        return result;
-    }
-    return result;
-}
-
-//Internals - private:
-
-bool Socket::getLinuxAddressFamily(int& family) const
-{
-    if(addressFamily == AddressFamily::IPv4)
-    {
-        family = AF_INET;
-    }
-    else if(addressFamily == AddressFamily::IPv6)
-    {
-        family = AF_INET6;
-    }
-    else //Should never happen.
-    {
-        LogError() << "Unknown protocol type!";
-        return false;
-    }
+    //else: UDP doesn't need/supports the listen function.
+    sockaddr_in6 addr;
+    socklen_t socklen;
+    ::accept(sockfd, (sockaddr*) &addr, &socklen);
     return true;
 }
 
+//Internals - private:
 bool Socket::getLinuxSocketType(int& type) const
 {
     if(socketType == SocketType::TCP)
@@ -136,7 +116,7 @@ bool Socket::toIPv6(const Clipped::String& addressString, in6_addr& outIp) const
     return (1 == inet_pton(AF_INET6, addressString.c_str(), &outIp));
 }
 
-bool Socket::setupSocket()
+bool Socket::setupSocket(int addressFamily)
 {
     if(0 > sockfd)
     {
@@ -146,40 +126,23 @@ bool Socket::setupSocket()
 
     bool result = true;
     result &= getLinuxSocketType(unixSocketType);
-    result &= getLinuxAddressFamily(unixAddressFamily);
 
     if(result)
     {
-        sockfd = socket(unixAddressFamily, unixSocketType, 0);
+        sockfd = socket(addressFamily, unixSocketType, 0);
         if(0 > sockfd) //sockfd returns -1 on fail condition.
         {
             LogError() << "Can't create socket!";
             return false;
         }
-        int sockoptval = 1;
-        setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &sockoptval, sizeof(int));
+//        int sockoptval = 1; //Possibly means: enable.
+//        setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &sockoptval, sizeof(int));
+//        int flags = fcntl(sockfd, F_GETFL); //Get current socket flags.
+//        if(-1 == fcntl(sockfd, F_SETFL, flags | O_NONBLOCK)) //Set socket to be non blocking.
+//        {
+//            LogError() << "Set socket non blocking failed!";
+//            return false;
+//        }
     }
     return result;
-}
-
-//===== SocketPeer =====//
-
-SocketPeer::SocketPeer()
-{
-    this->isOpen = true;
-}
-
-bool SocketPeer::open(const IODevice::OpenMode& mode)
-{
-    return isOpen; //SocketPeer will be active, if created. Therefore nothing to do here.
-}
-
-bool SocketPeer::write(const String& data)
-{
-
-}
-
-bool SocketPeer::close()
-{
-    return (0 == shutdown(fd, SHUT_RDWR));
 }

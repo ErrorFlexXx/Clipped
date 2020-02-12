@@ -16,17 +16,18 @@ set(${PROJECT_NAME}_PUBLIC_HEADER
     include/${PROJECT_NAME}/cSerialPortLinux.h
     include/${PROJECT_NAME}/cSerialPortWindows.h
     include/${PROJECT_NAME}/cSerialPortInterface.h
-	include/${PROJECT_NAME}/cSocket.h
-	include/${PROJECT_NAME}/cSocketLinux.h
-	include/${PROJECT_NAME}/cSocketWindows.h
-	include/${PROJECT_NAME}/cSocketInterface.h
+    include/${PROJECT_NAME}/cSocket.h
+    include/${PROJECT_NAME}/cSocketLinux.h
+    include/${PROJECT_NAME}/cSocketWindows.h
+    include/${PROJECT_NAME}/cSocketInterface.h
 )
 
 set(${PROJECT_NAME}_SOURCES
     src/cSerialPortLinux.cpp
     src/cSerialPortWindows.cpp
-	src/cSocketLinux.cpp
-	src/cSocketWindows.cpp
+    src/cSocketLinux.cpp
+    src/cSocketWindows.cpp
+    src/cSocketInterface.cpp
 )
 
 add_library(${PROJECT_NAME} ${CLIPPED_BUILD_TYPE}

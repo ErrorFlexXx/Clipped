@@ -4,7 +4,7 @@
 using namespace Clipped;
 
 bool listenSocket();
-bool connect();
+
 
 int main(void)
 {
@@ -12,33 +12,21 @@ int main(void)
     int result = 0;
 
     result |= !listenSocket();
-    result |= !connect();
 
     return result;
 }
 
-Socket server(Socket::SocketType::UDP, Socket::AddressFamily::IPv4);
+Socket server(SocketType::UDP);
 bool listenSocket()
 {
     LogInfo() << "Testcase: " << __FUNCTION__;
 
-    if(!server.listen("0.0.0.0", 4000))
+    if(!server.listen("::1", 4000))
     {
         LogError() << "Listen failed!";
         return false;
     }
-    return true;
-}
-
-Socket client(Socket::SocketType::UDP, Socket::AddressFamily::IPv4);
-bool connect()
-{
-    LogInfo() << "Testcase: " << __FUNCTION__;
-
-    if(!client.connect("127.0.0.1", 4000))
-    {
-        LogError() << "Can't connect to previously created socket!";
-        return false;
-    }
+    unsigned long long i;
+    for (i = 0; i < 10000000000; i++);
     return true;
 }
