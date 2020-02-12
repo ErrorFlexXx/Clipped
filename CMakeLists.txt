@@ -61,6 +61,7 @@ endif()
 # they depend on the build libraries.
 if(CLIPPED_BUILD_TESTS)
     enable_testing()
+    add_subdirectory(Communication/tests)
     add_subdirectory(Utils/tests)
     add_subdirectory(Filesystem/tests)
     add_subdirectory(Maths/tests)
