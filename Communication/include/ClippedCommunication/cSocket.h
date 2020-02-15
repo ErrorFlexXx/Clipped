@@ -29,6 +29,8 @@
 
 #include <ClippedUtils/cOsDetect.h>
 
+#include "cSocketInterface.h"
+
 #ifdef LINUX
 #include "cSocketLinux.h"
 #elif defined(WINDOWS)

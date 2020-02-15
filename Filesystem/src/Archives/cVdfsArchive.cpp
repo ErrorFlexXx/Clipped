@@ -334,7 +334,7 @@ bool VDFSArchive::open()
 bool VDFSArchive::create()
 {
     bool result = file.open(FileAccessMode::TRUNC);
-    header.rootOffset = VDFSHeader::getByteSize(CommentLength, SignatureLength);
+    header.rootOffset = static_cast<uint32_t>(VDFSHeader::getByteSize(CommentLength, SignatureLength));
     header.entrySize = 80;
     memoryManager.alloc(0, header.rootOffset); //Mark header region as used.
     modified = true;
@@ -699,7 +699,7 @@ bool VDFSArchive::removeFile(FileEntry* fileEntry)
             //Update header:
             modified = true; //Update index on disk, if archive gets closed.
             header.fileCount--;
-            header.contentSize -= sizeOfFile;
+            header.contentSize -= static_cast<uint32_t>(sizeOfFile);
             header.entryCount--;
             memoryManager.free(offset, sizeOfFile);
         }

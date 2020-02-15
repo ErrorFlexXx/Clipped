@@ -5,7 +5,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <ClippedUtils/cString.h>
-#include "cSocketInterface.h"
 
 namespace Clipped
 {
