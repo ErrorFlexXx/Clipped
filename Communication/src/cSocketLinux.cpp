@@ -29,7 +29,7 @@
 
 #ifdef LINUX //This implementation shall only be compiled on linux systems.
 
-#include "cSocketLinux.h"
+#include "cSocket.h"
 #include <ClippedUtils/cLogger.h>
 #include <arpa/inet.h>
 #include <unistd.h>
