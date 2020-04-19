@@ -131,7 +131,9 @@ bool File::touch(const bool override)
     }
     LogDebug() << "Create now.";
     // File doesn't exist, or is deleted now, so go create a new one.
-    return open(FileAccessMode::TRUNC, dataMode);  // And return the result.
+    open(FileAccessMode::TRUNC, dataMode);  // And return the result.
+    close();
+    return exists();
 }
 
 bool File::copy(const Path& destination)
