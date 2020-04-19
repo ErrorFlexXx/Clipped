@@ -106,14 +106,21 @@ namespace Clipped
          * Note: The path has to be a directory path only.
          * @return reference to this object.
          */
-        BasicPath<T>& up();
+        BasicPath<T> up();
 
         /**
          * @brief operator + appends a string to the path.
          * @param rhs string to append.
          * @return reference to this object.
          */
-        BasicPath<T>& operator+(const BasicString<T>& rhs);
+        BasicPath<T> operator+(const BasicString<T>& rhs);
+
+        /**
+         * @brief operator + appends a cstring to the path.
+         * @param rhs the cstring.
+         * @return reference to this object.
+         */
+        BasicPath<T> operator+(const char* rhs);
 
         /**
          * @brief setFilename sets or overwrites the filename of this path.

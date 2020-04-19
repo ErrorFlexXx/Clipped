@@ -129,17 +129,25 @@ BasicString<T> BasicPath<T>::getExtension() const
 }
 
 template <class T>
-BasicPath<T>& BasicPath<T>::up()
+BasicPath<T> BasicPath<T>::up()
 {
-    *this = this->getDirectory();
-    return *this;
+    return this->getDirectory();
 }
 
 template <class T>
-BasicPath<T>& BasicPath<T>::operator+(const BasicString<T>& rhs)
+BasicPath<T> BasicPath<T>::operator+(const BasicString<T>& rhs)
 {
-    this->append(rhs);
-    return *this;
+    BasicPath<T> newPath = *this;
+    newPath.append(rhs);
+    return newPath;
+}
+
+template <class T>
+BasicPath<T> BasicPath<T>::operator+(const char* rhs)
+{
+    BasicPath<T> newPath = *this;
+    newPath.append(rhs);
+    return newPath;
 }
 
 template <class T>
