@@ -104,11 +104,14 @@ bool copyFile()
     bool result = true;
 
     std::list<Path> files = explorer.searchFiles("testExplorer", false);
+    if(0 == files.size())
+        files = explorer.searchFiles("testExplorer.exe", false);
 
-    if(1 != files.size())
+    if(files.size() <= 0)
     {
         result = false;
-        LogError() << "Found more files than expected!";
+        LogError() << "Found less files than expected!";
+        return result;
     }
 
     Path exeFile = files.front();
