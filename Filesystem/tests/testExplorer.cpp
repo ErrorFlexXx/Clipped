@@ -121,8 +121,11 @@ bool copyFile()
 
     if(1 != explorer.searchFiles("testExplorerCopyFile", false).size())
     {
-        result = false;
-        LogError() << "Copy failed!" << exeFile.toString() << " copy to " << exeCopyFile.toString();
+        if(1 != explorer.searchFiles("testExplorerCopyFile.exe", false).size())
+        {
+            result = false;
+            LogError() << "Copy failed!" << exeFile.toString() << " copy to " << exeCopyFile.toString();
+        }
     }
 
     return result;
