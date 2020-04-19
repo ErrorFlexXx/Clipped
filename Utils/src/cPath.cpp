@@ -120,7 +120,12 @@ BasicString<T> BasicPath<T>::getFilename() const
 template <class T>
 BasicString<T> BasicPath<T>::getExtension() const
 {
-    return getFilenameWithExt().split(FILE_EXT_DELIM).back();
+    vector<BasicString<T>> parts = getFilenameWithExt().split(FILE_EXT_DELIM);
+    if(1 < parts.size())
+    {
+        return getFilenameWithExt().split(FILE_EXT_DELIM).back();
+    }
+    return "";
 }
 
 template <class T>

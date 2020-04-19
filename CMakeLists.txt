@@ -17,7 +17,7 @@ set(CLIPPED_BUILD_COMMUNICATION OFF CACHE BOOL "Build ClippedCommunication libra
 set(CLIPPED_BUILD_ECS OFF CACHE BOOL "Build ClippedECS library.")
 set(CLIPPED_BUILD_TESTS OFF CACHE BOOL "Build tests.")
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Note: Build type static if only allowed for OSS projects!
@@ -61,9 +61,15 @@ endif()
 # they depend on the build libraries.
 if(CLIPPED_BUILD_TESTS)
     enable_testing()
+
     add_subdirectory(Utils/tests)
-    add_subdirectory(Filesystem/tests)
-    add_subdirectory(Maths/tests)
+
+    if(CLIPPED_BUILD_FILESYSTEM)
+        add_subdirectory(Filesystem/tests)
+    endif()
+    if(CLIPPED_BUILD_MATHS)
+        add_subdirectory(Maths/tests)
+    endif()
 endif()
 
 # Do not forget to target_link_libraries against ClippedUtils ClippedFilesystem ...
