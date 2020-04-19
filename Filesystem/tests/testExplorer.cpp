@@ -103,9 +103,9 @@ bool copyFile()
     LogInfo() << "Testcase: " << __FUNCTION__;
     bool result = true;
 
-    std::list<Path> files = explorer.searchFiles("testExplorer", false);
+    std::list<Path> files = explorer.searchFiles("testExplorer", true);
     if(0 == files.size())
-        files = explorer.searchFiles("testExplorer.exe", false);
+        files = explorer.searchFiles("testExplorer.exe", true);
 
     if(files.size() <= 0)
     {
