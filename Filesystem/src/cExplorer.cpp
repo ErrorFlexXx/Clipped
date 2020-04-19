@@ -6,13 +6,14 @@ using namespace Clipped;
 namespace fs = std::experimental::filesystem;
 
 Explorer::Explorer()
-    : currentDir(fs::current_path().c_str())
-{}
+    : currentDir(fs::current_path().u8string().c_str())
+{
+}
 
 Explorer::Explorer(const Path &cwd)
 {
     fs::current_path(cwd.c_str());
-    currentDir = fs::current_path().c_str();
+    currentDir = fs::current_path().u8string().c_str();
 }
 
 MemorySize Explorer::getDriveAvailableMemory() const
@@ -28,7 +29,7 @@ MemorySize Explorer::getDriveCapacity() const
 void Explorer::changeDirectory(const Path& gotoDirectory)
 {
     fs::current_path(gotoDirectory.c_str());
-    currentDir = fs::current_path().c_str();
+    currentDir = fs::current_path().u8string().c_str();
 }
 
 list<Path> Explorer::searchFiles(const String& searchString, bool recursive)
@@ -41,7 +42,7 @@ list<Path> Explorer::searchFiles(const String& searchString, bool recursive)
         {
             if(!fs::is_directory(p.path()))
             {
-                Path entry = p.path().c_str();
+                Path entry = p.path().u8string().c_str();
                 if(entry.wildcardMatch(searchString))
                     matches.push_back(entry);
             } //else, it's a file and no dir.
@@ -53,7 +54,7 @@ list<Path> Explorer::searchFiles(const String& searchString, bool recursive)
         {
             if(!fs::is_directory(p.path()))
             {
-                Path entry = p.path().c_str();
+                Path entry = p.path().u8string().c_str();
                 if(entry.wildcardMatch(searchString))
                     matches.push_back(entry);
             } //else, it's a file and no dir.
@@ -73,7 +74,7 @@ list<Path> Explorer::searchDirs(const String &searchString, bool recursive)
         {
             if(fs::is_directory(p.path()))
             {
-                Path entry = p.path().c_str();
+                Path entry = p.path().u8string().c_str();
                 if(entry.wildcardMatch(searchString))
                     matches.push_back(entry);
             } //else, it's a file and no dir.
@@ -85,7 +86,7 @@ list<Path> Explorer::searchDirs(const String &searchString, bool recursive)
         {
             if(fs::is_directory(p.path()))
             {
-                Path entry = p.path().c_str();
+                Path entry = p.path().u8string().c_str();
                 if(entry.wildcardMatch(searchString))
                     matches.push_back(entry);
             } //else, it's a file and no dir.
@@ -124,10 +125,10 @@ void Explorer::Copy(const Path &from, const Path &to, bool recursive)
 {
     if(recursive)
     {
-        fs::copy(from.c_str(), to.c_str(), fs::copy_options::recursive);
+        fs::copy(from.c_str(), to.c_str(), fs::copy_options::recursive | fs::copy_options::overwrite_existing);
     }
     else
     {
-        fs::copy(from.c_str(), to.c_str(), fs::copy_options::none);
+        fs::copy(from.c_str(), to.c_str(), fs::copy_options::overwrite_existing);
     }
 }
