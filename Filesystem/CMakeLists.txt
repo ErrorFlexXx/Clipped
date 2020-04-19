@@ -31,7 +31,12 @@ add_library(${PROJECT_NAME} ${CLIPPED_BUILD_TYPE}
     src/Archives/cVdfsArchive.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ClippedUtils stdc++fs)
+SET(LIBRARIES stdc++fs)
+IF (WIN32)
+    SET(LIBRARIES "")
+ENDIF()
+
+target_link_libraries(${PROJECT_NAME} PRIVATE ClippedUtils ${LIBRARIES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     VERSION ${PROJECT_VERSION}
