@@ -26,6 +26,11 @@ MemorySize Explorer::getDriveCapacity() const
     return fs::space(currentDir.c_str()).capacity;
 }
 
+Path Explorer::getCurrentPath() const
+{
+    return fs::current_path().u8string().c_str();
+}
+
 void Explorer::changeDirectory(const Path& gotoDirectory)
 {
     fs::current_path(gotoDirectory.c_str());

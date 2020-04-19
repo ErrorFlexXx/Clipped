@@ -28,6 +28,12 @@ namespace Clipped
         MemorySize getDriveCapacity() const;
 
         /**
+         * @brief getCurrentPath returns the current path.
+         * @return the current path.
+         */
+        Path getCurrentPath() const;
+
+        /**
          * @brief changeDirectory changes the current directory.
          */
         void changeDirectory(const Path& gotoDirectory);
