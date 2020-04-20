@@ -12,15 +12,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Public Header of this library (later copied to e.g. /usr/local/include/Project_Name/):
 set(${PROJECT_NAME}_PUBLIC_HEADER 
     include/${PROJECT_NAME}/cSystem.h
+    include/${PROJECT_NAME}/cThread.h
 )
 
 add_library(${PROJECT_NAME} ${CLIPPED_BUILD_TYPE}
     ${${PROJECT_NAME}_PUBLIC_HEADER}
     src/cSystem.cpp
+    src/cThread.cpp
     ${${PROJECT_NAME}_PUBLIC_HEADER}
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ClippedUtils)
+SET(LIBRARIES "")
+IF (UNIX)
+    SET(LIBRARIES pthread)
+ENDIF()
+
+target_link_libraries(${PROJECT_NAME} PRIVATE ClippedUtils ${LIBRARIES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     VERSION ${PROJECT_VERSION}

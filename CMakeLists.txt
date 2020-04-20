@@ -67,6 +67,11 @@ if(CLIPPED_BUILD_TESTS)
     if(CLIPPED_BUILD_FILESYSTEM)
         add_subdirectory(Filesystem/tests)
     endif()
+
+    if(CLIPPED_BUILD_ENVIRONMENT)
+        add_subdirectory(Environment/tests)
+    endif()
+
     if(CLIPPED_BUILD_MATHS)
         add_subdirectory(Maths/tests)
     endif()
